@@ -29,7 +29,7 @@ fn app() -> Html {
                                     log!("11", body.clone());
                                     let body = body.clone();
                                     // 解开注释报错 太孤单了~
-                                    let str = body.as_str();
+                                    let _str = body.as_str();
                                     title.set("balabala");
                                 }
                                 Err(err) => log!(err.to_string()),
