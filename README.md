@@ -2,4 +2,4 @@
 
 Code and science blog, written in rust.
 
-use yew + rocket + postgresql
+use yew + actix-web + postgresql
