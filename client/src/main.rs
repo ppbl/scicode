@@ -4,7 +4,7 @@ use yew::prelude::*;
 
 #[function_component(App)]
 fn app() -> Html {
-    let title = use_state(|| "Hello Yew");
+    let title = use_state(|| String::from("Hello Yew"));
     let counter = use_state(|| 0);
 
     let increase = {
@@ -20,23 +20,11 @@ fn app() -> Html {
         use_effect_with_deps(
             move |_| {
                 spawn_local(async move {
-                    let res = reqwest::get("http://localhost:8000").await;
-                    match res {
-                        Ok(res) => {
-                            let body = res.text().await;
-                            match body {
-                                Ok(body) => {
-                                    log!("11", body.clone());
-                                    let body = body.clone();
-                                    // 解开注释报错 太孤单了~
-                                    let _str = body.as_str();
-                                    title.set("balabala");
-                                }
-                                Err(err) => log!(err.to_string()),
-                            }
-                        }
-                        Err(err) => log!(err.to_string()),
-                    }
+                    let res = reqwest::get("http://localhost:8000?lang=rust")
+                        .await
+                        .expect("request fail");
+                    let body = res.text().await.expect("parse fail");
+                    title.set(body);
                 });
                 || ()
             },
@@ -45,7 +33,7 @@ fn app() -> Html {
     }
     html! {
         <div>
-            <h1>{ *title }</h1>
+            <h1>{ (*title).as_str() }</h1>
             <p>
                 <b>{ "Current value: " }</b>
                 { *counter }
