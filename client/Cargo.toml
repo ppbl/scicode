@@ -7,7 +7,10 @@ version = "0.1.0"
 
 [dependencies]
 gloo = "0.6"
+markdown = "0.3"
 reqwest = {version = "0.11", features = ["json"]}
+serde = "1"
 wasm-bindgen-futures = "0.4.29"
 web-sys = "0.3"
-yew = {git = "https://github.com/yewstack/yew/"}
+yew = "0.19.3"
+yew-router = "0.16"

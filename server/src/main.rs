@@ -1,31 +1,62 @@
-use actix_cors::Cors;
+#[macro_use]
+extern crate diesel;
+
 use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder};
+use diesel::prelude::*;
 use serde::Deserialize;
 
+mod db;
+mod models;
+mod schema;
+
+use models::*;
+
+#[get("/posts")]
+async fn posts() -> impl Responder {
+    use schema::posts::dsl::*;
+    let connection = db::establish_connection();
+    let results = posts
+        .filter(published.eq(true))
+        .order(id.desc())
+        .limit(20)
+        .load::<Post>(&connection)
+        .expect("Error loading posts");
+    HttpResponse::Ok().json(results)
+}
+
 #[derive(Deserialize)]
-struct Search {
-    lang: String,
+struct PostQuery {
+    id: i32,
+}
+#[get("/post")]
+async fn post(query: web::Query<PostQuery>) -> impl Responder {
+    use schema::posts::dsl::*;
+    let connection = db::establish_connection();
+    let results = posts
+        .find(query.id)
+        .get_result::<Post>(&connection)
+        .expect("Error loading posts");
+    HttpResponse::Ok().json(results)
 }
 
-#[get("/")]
-async fn hello(search: web::Query<Search>) -> impl Responder {
-    HttpResponse::Ok().body(format!("Hello {}!", search.lang))
+#[derive(Deserialize)]
+struct Body {
+    title: String,
+    body: String,
 }
 
-#[post("/echo")]
-async fn echo(req_body: String) -> impl Responder {
-    HttpResponse::Ok().body(req_body)
+#[post("/create_post")]
+async fn create_post(req_body: web::Json<Body>) -> impl Responder {
+    let connection = db::establish_connection();
+    println!("{}", req_body.title);
+    db::create_post(&connection, &req_body.title, &req_body.body);
+    HttpResponse::Ok().body("success")
 }
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    HttpServer::new(|| {
-        let cors = Cors::default()
-            .allowed_origin("http://localhost:8080")
-            .allowed_origin("http://127.0.0.1:8080");
-        App::new().wrap(cors).service(hello).service(echo)
-    })
-    .bind("127.0.0.1:8000")?
-    .run()
-    .await
+    HttpServer::new(|| App::new().service(posts).service(post).service(create_post))
+        .bind("127.0.0.1:8000")?
+        .run()
+        .await
 }

@@ -2,7 +2,9 @@
 
 Code and science blog, written in rust.
 
-use yew + actix-web + postgresql
+client side use [yew](https://yew.rs/) + [trunk](https://trunkrs.dev/)
+
+server side use [actix-web](https://actix.rs/) + [diesel](https://diesel.rs/) + [postgres](https://www.postgresql.org/)
 
 ## client
 
