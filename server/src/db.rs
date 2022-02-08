@@ -2,6 +2,7 @@ use crate::models::*;
 use crate::schema::*;
 use diesel::prelude::*;
 use diesel::{
+    delete, insert_into,
     pg::PgConnection,
     r2d2::{ConnectionManager, Pool, PooledConnection},
 };
@@ -28,10 +29,18 @@ pub fn create_post<'a>(conn: &PgConnection, title: &'a str, body: &'a str) -> Po
         published: &true,
     };
 
-    diesel::insert_into(posts::table)
+    insert_into(posts::table)
         .values(&new_post)
         .get_result(conn)
         .expect("Error saving new post")
+}
+
+pub fn delete_post<'a>(conn: &PgConnection, post_id: i32) -> usize {
+    let num = delete(posts::table)
+        .filter(posts::id.eq(post_id))
+        .execute(conn)
+        .unwrap();
+    num
 }
 
 lazy_static! {

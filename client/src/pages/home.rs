@@ -37,6 +37,17 @@ pub fn home() -> Html {
         );
     };
 
+    fn delete(id: i32) {
+        spawn_local(async move {
+            let origin = gloo::utils::window().location().origin().unwrap();
+            reqwest::Client::new()
+                .delete(format!("{origin}/api/delete_post?id={id}"))
+                .send()
+                .await
+                .expect("request fail");
+        })
+    }
+
     html! {
         <ul class="posts">
         {
@@ -51,6 +62,15 @@ pub fn home() -> Html {
                             })
                         })
                 }>{ &item.title }</div>
+                <span class="posts-item-delete" onclick={
+
+                    let id = item.id;
+                    Callback::from(move |_| {
+                        delete(id);
+                        // posts.set(posts.iter().filter(|item| item.id != id).collect())
+                    })
+                }
+                    >{"删除"}</span>
                 </li>
             }).collect::<Html>()
         }

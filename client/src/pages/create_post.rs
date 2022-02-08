@@ -41,9 +41,9 @@ pub fn create_post() -> Html {
 
     html! {
         <div class="create-post">
-            <input ref={input_ref} />
-            <textarea ref={textarea_ref} />
-            <button onclick={publish}>{"提交"}</button>
+            <input ref={input_ref} class="post-title" placeholder="输入标题"/>
+            <textarea ref={textarea_ref} class="post-content" placeholder="输入正文"/>
+            <button class="post-confirm" onclick={publish}>{"提交"}</button>
         </div>
     }
 }

@@ -1,7 +1,7 @@
 #[macro_use]
 extern crate diesel;
 
-use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder};
+use actix_web::{delete, get, post, web, App, HttpResponse, HttpServer, Responder};
 use diesel::prelude::*;
 use serde::Deserialize;
 
@@ -65,10 +65,27 @@ async fn create_post(req_body: web::Json<Body>) -> impl Responder {
     }
 }
 
+#[delete("/delete_post")]
+async fn delete_post(query: web::Query<PostQuery>) -> impl Responder {
+    if db::can_connect() {
+        let connection = db::get_connection();
+        let rows = db::delete_post(&connection, query.id);
+        HttpResponse::Ok().body(format!("{} row(s) affected", rows))
+    } else {
+        HttpResponse::Ok().body("cannot connect to db")
+    }
+}
+
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    HttpServer::new(|| App::new().service(posts).service(post).service(create_post))
-        .bind("127.0.0.1:8000")?
-        .run()
-        .await
+    HttpServer::new(|| {
+        App::new()
+            .service(posts)
+            .service(post)
+            .service(create_post)
+            .service(delete_post)
+    })
+    .bind("127.0.0.1:8000")?
+    .run()
+    .await
 }
