@@ -70,7 +70,11 @@ async fn delete_post(query: web::Query<PostQuery>) -> impl Responder {
     if db::can_connect() {
         let connection = db::get_connection();
         let rows = db::delete_post(&connection, query.id);
-        HttpResponse::Ok().body(format!("{} row(s) affected", rows))
+        HttpResponse::Ok().body(if rows == 1 {
+            format!("post {} has been deleted", query.id)
+        } else {
+            "nothing need to do".to_string()
+        })
     } else {
         HttpResponse::Ok().body("cannot connect to db")
     }

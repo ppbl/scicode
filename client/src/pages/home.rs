@@ -63,11 +63,11 @@ pub fn home() -> Html {
                         })
                 }>{ &item.title }</div>
                 <span class="posts-item-delete" onclick={
-
+                    let posts = posts.clone();
                     let id = item.id;
                     Callback::from(move |_| {
                         delete(id);
-                        // posts.set(posts.iter().filter(|item| item.id != id).collect())
+                        posts.set(posts.iter().filter(|item| item.id != id).cloned().collect())
                     })
                 }
                     >{"删除"}</span>
