@@ -1,6 +1,3 @@
-use crate::models::*;
-use crate::schema::*;
-use diesel::prelude::*;
 use diesel::{
     pg::PgConnection,
     r2d2::{ConnectionManager, Pool, PooledConnection},
@@ -20,27 +17,6 @@ pub struct ConnectionPool {
 //     let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
 //     PgConnection::establish(&database_url).expect(&format!("Error connecting to {}", database_url))
 // }
-
-pub fn create_post<'a>(conn: &PgConnection, title: &'a str, body: &'a str) -> Post {
-    let new_post = NewPost {
-        title,
-        body,
-        published: &true,
-    };
-
-    diesel::insert_into(posts::table)
-        .values(&new_post)
-        .get_result(conn)
-        .expect("Error saving new post")
-}
-
-pub fn delete_post<'a>(conn: &PgConnection, post_id: i32) -> usize {
-    let num = diesel::delete(posts::table)
-        .filter(posts::id.eq(post_id))
-        .execute(conn)
-        .unwrap();
-    num
-}
 
 lazy_static! {
     pub static ref CONN_POOL: ConnectionPool = {

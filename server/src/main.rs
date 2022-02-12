@@ -1,84 +1,17 @@
 #[macro_use]
 extern crate diesel;
 
-use actix_web::{delete, get, post, web, App, HttpResponse, HttpServer, Responder};
-use diesel::prelude::*;
-use serde::Deserialize;
+use actix_web::{App, HttpServer};
 
 mod db;
 mod models;
 mod schema;
+mod services;
 
-use models::*;
-
-#[get("/posts")]
-async fn posts() -> impl Responder {
-    use schema::posts::dsl::*;
-    if db::can_connect() {
-        let connection = db::get_connection();
-        let results = posts
-            .filter(published.eq(true))
-            .order(id.desc())
-            .limit(20)
-            .load::<Post>(&connection)
-            .expect("Error loading posts");
-        HttpResponse::Ok().json(results)
-    } else {
-        HttpResponse::Ok().body("cannot connect to db")
-    }
-}
-
-#[derive(Deserialize)]
-struct PostQuery {
-    id: i32,
-}
-#[get("/post")]
-async fn post(query: web::Query<PostQuery>) -> impl Responder {
-    use schema::posts::dsl::*;
-    if db::can_connect() {
-        let connection = db::get_connection();
-        let results = posts
-            .find(query.id)
-            .get_result::<Post>(&connection)
-            .expect("Error loading posts");
-        HttpResponse::Ok().json(results)
-    } else {
-        HttpResponse::Ok().body("cannot connect to db")
-    }
-}
-
-#[derive(Deserialize)]
-struct Body {
-    title: String,
-    body: String,
-}
-
-#[post("/create_post")]
-async fn create_post(req_body: web::Json<Body>) -> impl Responder {
-    if db::can_connect() {
-        let connection = db::get_connection();
-        println!("{}", req_body.title);
-        db::create_post(&connection, &req_body.title, &req_body.body);
-        HttpResponse::Ok().body("success")
-    } else {
-        HttpResponse::Ok().body("cannot connect to db")
-    }
-}
-
-#[delete("/delete_post")]
-async fn delete_post(query: web::Query<PostQuery>) -> impl Responder {
-    if db::can_connect() {
-        let connection = db::get_connection();
-        let rows = db::delete_post(&connection, query.id);
-        HttpResponse::Ok().body(if rows == 1 {
-            format!("post {} has been deleted", query.id)
-        } else {
-            "nothing need to do".to_string()
-        })
-    } else {
-        HttpResponse::Ok().body("cannot connect to db")
-    }
-}
+use services::{
+    comments::comments, create_post::create_post, delete_post::delete_post, post::post,
+    post_comment::post_comment, posts::posts,
+};
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -88,6 +21,8 @@ async fn main() -> std::io::Result<()> {
             .service(post)
             .service(create_post)
             .service(delete_post)
+            .service(post_comment)
+            .service(comments)
     })
     .bind("127.0.0.1:8000")?
     .run()

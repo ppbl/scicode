@@ -4,6 +4,8 @@ use web_sys::{HtmlInputElement, HtmlTextAreaElement};
 use yew::prelude::*;
 use yew_router::{history::History, hooks::use_history};
 
+use crate::components::button::Button;
+use crate::utils::get_origin::get_origin;
 use crate::Route;
 
 #[function_component(CreatePost)]
@@ -16,20 +18,17 @@ pub fn create_post() -> Html {
     let publish = {
         let input_ref = input_ref.clone();
         let textarea_ref = textarea_ref.clone();
-        let history = history.clone();
         Callback::from(move |_| {
-            let input_ref = input_ref.clone();
-            let textarea_ref = textarea_ref.clone();
+            let input = input_ref.cast::<HtmlInputElement>().unwrap();
+            let textarea = textarea_ref.cast::<HtmlTextAreaElement>().unwrap();
+            let mut map = HashMap::new();
+            map.insert("title", input.value());
+            map.insert("body", textarea.value());
+
             let history = history.clone();
             spawn_local(async move {
-                let origin = gloo::utils::window().location().origin().unwrap();
-                let input = input_ref.cast::<HtmlInputElement>().unwrap();
-                let textarea = textarea_ref.cast::<HtmlTextAreaElement>().unwrap();
-                let mut map = HashMap::new();
-                map.insert("title", input.value());
-                map.insert("body", textarea.value());
                 reqwest::Client::new()
-                    .post(format!("{origin}/api/create_post"))
+                    .post(format!("{}/api/create_post", get_origin()))
                     .json(&map)
                     .send()
                     .await
@@ -43,7 +42,7 @@ pub fn create_post() -> Html {
         <div class="create-post">
             <input ref={input_ref} class="post-title" placeholder="输入标题"/>
             <textarea ref={textarea_ref} class="post-content" placeholder="输入正文"/>
-            <button class="post-confirm" onclick={publish}>{"提交"}</button>
+            <Button onclick={publish}>{ "提交" }</Button>
         </div>
     }
 }

@@ -3,7 +3,9 @@ use yew_router::prelude::*;
 
 mod components;
 mod pages;
+mod utils;
 
+use components::button::Button;
 use pages::{create_post::CreatePost, home::Home, post::Post};
 
 #[derive(Clone, Routable, PartialEq)]
@@ -39,7 +41,7 @@ fn app() -> Html {
                     {"scicode"}
                 </Link<Route>>
                 <Link<Route> to={Route::CreatePost}>
-                    <button > { "发布" } </button>
+                    <Button>{ "发布" }</Button>
                 </Link<Route>>
             </header>
             <Switch<Route> render={Switch::render(switch)} />

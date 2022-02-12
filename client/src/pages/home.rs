@@ -3,7 +3,7 @@ use wasm_bindgen_futures::spawn_local;
 use yew::prelude::*;
 use yew_router::prelude::*;
 
-use crate::Route;
+use crate::{utils::get_origin::get_origin, Route};
 
 #[derive(Clone, PartialEq, Deserialize)]
 struct Post {
@@ -22,8 +22,7 @@ pub fn home() -> Html {
         use_effect_with_deps(
             move |_| {
                 spawn_local(async move {
-                    let origin = gloo::utils::window().location().origin().unwrap();
-                    let body: Vec<Post> = reqwest::get(format!("{origin}/api/posts"))
+                    let body: Vec<Post> = reqwest::get(format!("{}/api/posts", get_origin()))
                         .await
                         .expect("request fail")
                         .json()
