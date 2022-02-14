@@ -10,5 +10,8 @@
             "username": "scicode",
             "password": "123456.."
         }
-    ]
+    ],
+    "emmet.includeLanguages": {
+        "rust": "html"
+    }
 }

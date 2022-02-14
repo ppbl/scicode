@@ -8,8 +8,12 @@ version = "0.1.0"
 [dependencies]
 actix-cors = "0.5"
 actix-web = "3"
-diesel = {version = "1", features = ["postgres", "r2d2"]}
+chrono = {version = "0.4.19", features = ["serde"]}
+diesel = {version = "1", features = ["postgres", "r2d2", "chrono"]}
 dotenv = "0.15"
+jsonwebtoken = "8"
 lazy_static = "1"
+nanoid = "0.4.0"
 r2d2 = "0.8.9"
+rust-argon2 = "1.0"
 serde = "1"

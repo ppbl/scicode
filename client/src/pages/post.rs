@@ -1,5 +1,8 @@
-use crate::{components::markdown::Markdown, utils::get_origin::*};
-use gloo::console::log;
+use crate::{
+    components::markdown::Markdown,
+    utils::{get_origin::*, request::get_client},
+};
+use chrono::prelude::*;
 use serde::{Deserialize, Serialize};
 use wasm_bindgen_futures::spawn_local;
 use web_sys::HtmlTextAreaElement;
@@ -16,12 +19,21 @@ pub struct PostBody {
     id: i32,
     title: String,
     body: String,
+    username: String,
+    create_at: NaiveDateTime,
 }
 
-#[derive(Serialize, Deserialize)]
-struct Comment {
+#[derive(Serialize)]
+struct NewComment {
     post_id: i32,
     body: String,
+}
+
+#[derive(Deserialize)]
+struct Comment {
+    post: i32,
+    body: String,
+    author: i32,
 }
 
 #[function_component(Post)]
@@ -31,7 +43,10 @@ pub fn post(props: &PostProps) -> Html {
         id: 0,
         title: "".to_string(),
         body: "".to_string(),
+        username: "".to_string(),
+        create_at: Local::now().naive_local(),
     });
+
     {
         let post = post.clone();
         let id = props.id;
@@ -78,13 +93,13 @@ pub fn post(props: &PostProps) -> Html {
         let id = props.id;
         Callback::from(move |_| {
             let textarea = textarea_ref.cast::<HtmlTextAreaElement>().unwrap();
-            let comment = Comment {
+            let comment = NewComment {
                 post_id: id,
                 body: textarea.value(),
             };
             let refresh = refresh.clone();
             spawn_local(async move {
-                reqwest::Client::new()
+                get_client()
                     .post(format!("{}/api/post_comment", get_origin()))
                     .json(&comment)
                     .send()
@@ -98,7 +113,8 @@ pub fn post(props: &PostProps) -> Html {
     html! {
         <div class="post">
             <section class="mt-4 p-4 bg-white rounded shadow shadow-gray-300">
-                <h1>{&(*post).title}</h1>
+                <h1 class="text-xl">{&((*post)).title}</h1>
+                <div>{&*post.username}{"发布于"}{(*post).create_at.format("%Y-%m-%d %H:%M:%S")}</div>
                 <Markdown source={(*post).body.to_string()} />
             </section>
             <section class="mt-4 p-4 bg-white rounded shadow shadow-gray-300">

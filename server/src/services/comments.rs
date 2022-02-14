@@ -14,7 +14,7 @@ async fn comments(query: web::Query<CommentQuery>) -> impl Responder {
     if db::can_connect() {
         let connection = db::get_connection();
         let results = comments
-            .filter(post_id.eq(query.id))
+            .filter(post.eq(query.id))
             .order(id.desc())
             .limit(20)
             .load::<Comment>(&connection)

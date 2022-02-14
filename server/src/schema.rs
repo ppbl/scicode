@@ -3,7 +3,8 @@ table! {
         id -> Int4,
         body -> Text,
         create_at -> Timestamp,
-        post_id -> Nullable<Int4>,
+        post -> Int4,
+        author -> Int4,
     }
 }
 
@@ -13,13 +14,25 @@ table! {
         title -> Varchar,
         body -> Text,
         published -> Bool,
+        author -> Int4,
         create_at -> Timestamp,
     }
 }
 
-joinable!(comments -> posts (post_id));
+table! {
+    users (id) {
+        id -> Int4,
+        username -> Varchar,
+        password -> Varchar,
+    }
+}
+
+joinable!(comments -> posts (post));
+joinable!(comments -> users (author));
+joinable!(posts -> users (author));
 
 allow_tables_to_appear_in_same_query!(
     comments,
     posts,
+    users,
 );

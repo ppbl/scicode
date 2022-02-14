@@ -3,7 +3,10 @@ use wasm_bindgen_futures::spawn_local;
 use yew::prelude::*;
 use yew_router::prelude::*;
 
-use crate::{utils::get_origin::get_origin, Route};
+use crate::{
+    utils::{get_origin::get_origin, request::get_client},
+    Route,
+};
 
 #[derive(Clone, PartialEq, Deserialize)]
 struct Post {
@@ -38,9 +41,8 @@ pub fn home() -> Html {
 
     fn delete(id: i32) {
         spawn_local(async move {
-            let origin = gloo::utils::window().location().origin().unwrap();
-            reqwest::Client::new()
-                .delete(format!("{origin}/api/delete_post?id={id}"))
+            get_client()
+                .delete(format!("{}/api/delete_post?id={id}", get_origin()))
                 .send()
                 .await
                 .expect("request fail");
