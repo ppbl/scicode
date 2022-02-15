@@ -3,11 +3,19 @@ use chrono::NaiveDateTime;
 use serde::Serialize;
 
 #[derive(Queryable, Serialize)]
+pub struct CommentAndUser {
+    pub id: i32,
+    pub body: String,
+    pub create_at: NaiveDateTime,
+    pub author: i32,
+    pub username: String,
+}
+#[derive(Queryable, Serialize)]
 pub struct Comment {
     pub id: i32,
     pub body: String,
     pub create_at: NaiveDateTime,
-    pub post: i32,
+    pub post: Option<i32>,
     pub author: i32,
 }
 #[derive(Insertable)]

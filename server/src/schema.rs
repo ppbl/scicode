@@ -3,7 +3,7 @@ table! {
         id -> Int4,
         body -> Text,
         create_at -> Timestamp,
-        post -> Int4,
+        post -> Nullable<Int4>,
         author -> Int4,
     }
 }

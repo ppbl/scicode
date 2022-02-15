@@ -1,3 +1,4 @@
+use gloo::dialogs::alert;
 use serde::Deserialize;
 use wasm_bindgen_futures::spawn_local;
 use yew::prelude::*;
@@ -39,13 +40,22 @@ pub fn home() -> Html {
         );
     };
 
-    fn delete(id: i32) {
+    fn delete(id: i32, posts: &UseStateHandle<Vec<Post>>) {
+        let posts = posts.clone();
         spawn_local(async move {
-            get_client()
+            let res = get_client()
                 .delete(format!("{}/api/delete_post?id={id}", get_origin()))
                 .send()
                 .await
-                .expect("request fail");
+                .expect("request fail")
+                .text()
+                .await
+                .unwrap();
+            if res == "success" {
+                posts.set(posts.iter().filter(|item| item.id != id).cloned().collect())
+            } else {
+                alert(&res)
+            }
         })
     }
 
@@ -66,9 +76,8 @@ pub fn home() -> Html {
                 <span class="posts-item-delete" onclick={
                     let posts = posts.clone();
                     let id = item.id;
-                    Callback::from(move |_| {
-                        delete(id);
-                        posts.set(posts.iter().filter(|item| item.id != id).cloned().collect())
+                    Callback::from( move |_| {
+                        delete(id, &posts);
                     })
                 }
                     >{"删除"}</span>

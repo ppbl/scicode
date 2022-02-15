@@ -1,3 +1,4 @@
+use gloo::utils::window;
 use yew::prelude::*;
 use yew_router::prelude::*;
 
@@ -8,7 +9,7 @@ mod utils;
 use components::button::Button;
 use pages::{create_post::CreatePost, home::Home, post::Post, sign_in::SignIn, sign_up::SignUp};
 
-use crate::utils::get_token::get_token;
+use crate::utils::stroage::{get_token, sign_out};
 
 #[derive(Clone, Routable, PartialEq)]
 enum Route {
@@ -42,6 +43,11 @@ fn switch(routes: &Route) -> Html {
 
 #[function_component(App)]
 fn app() -> Html {
+    let sign_out = Callback::from(move |_| {
+        sign_out();
+        window().location().reload().unwrap();
+    });
+
     let token = get_token();
     html! {
         <BrowserRouter>
@@ -55,7 +61,9 @@ fn app() -> Html {
                     </Link<Route>>
                     {
                         if let Some(_token) = token {
-                            html!()
+                            html!(
+                                <Button onclick={sign_out}>{ "退出登录" }</Button>
+                            )
                         }else {
                             html!(
                                 <>

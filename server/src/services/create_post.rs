@@ -30,22 +30,24 @@ async fn create_post(req_body: web::Json<Body>, req: HttpRequest) -> impl Respon
         )
         .unwrap()
         .claims;
-        if db::can_connect() {
-            let connection = db::get_connection();
-            let post = NewPost {
-                title: &req_body.title,
-                body: &req_body.body,
-                published: &true,
-                author: &claims.userid,
-            };
-            diesel::insert_into(posts::table)
-                .values(&post)
-                .get_result::<Post>(&connection)
-                .expect("Error saving new post");
-            HttpResponse::Ok().body("success")
-        } else {
-            HttpResponse::Ok().body("cannot connect to db")
+        if req_body.title.trim() == "" {
+            return HttpResponse::Ok().body("please input title");
         }
+        if req_body.body.trim() == "" {
+            return HttpResponse::Ok().body("please input body");
+        }
+        let connection = db::get_connection();
+        let post = NewPost {
+            title: &req_body.title,
+            body: &req_body.body,
+            published: &true,
+            author: &claims.userid,
+        };
+        diesel::insert_into(posts::table)
+            .values(&post)
+            .get_result::<Post>(&connection)
+            .expect("Error saving new post");
+        HttpResponse::Ok().body("success")
     } else {
         HttpResponse::Ok().body("please sgin in")
     }

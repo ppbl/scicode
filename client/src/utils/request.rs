@@ -3,7 +3,7 @@ use reqwest::{
     Client,
 };
 
-use super::get_token::get_token;
+use super::stroage::get_token;
 
 pub fn get_client() -> Client {
     let mut headers = HeaderMap::new();

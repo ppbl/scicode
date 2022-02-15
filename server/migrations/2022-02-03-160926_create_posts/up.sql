@@ -15,6 +15,6 @@ CREATE TABLE comments (
   id SERIAL PRIMARY KEY,
   body TEXT NOT NULL,
   create_at TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  post INT NOT NULL REFERENCES posts(id),
+  post INT REFERENCES posts(id),
   author INT NOT NULL REFERENCES users(id)
 );

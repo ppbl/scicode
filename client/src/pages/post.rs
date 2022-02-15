@@ -3,6 +3,7 @@ use crate::{
     utils::{get_origin::*, request::get_client},
 };
 use chrono::prelude::*;
+use gloo::dialogs::alert;
 use serde::{Deserialize, Serialize};
 use wasm_bindgen_futures::spawn_local;
 use web_sys::HtmlTextAreaElement;
@@ -31,9 +32,11 @@ struct NewComment {
 
 #[derive(Deserialize)]
 struct Comment {
-    post: i32,
+    id: i32,
     body: String,
+    create_at: NaiveDateTime,
     author: i32,
+    username: String,
 }
 
 #[function_component(Post)]
@@ -99,23 +102,30 @@ pub fn post(props: &PostProps) -> Html {
             };
             let refresh = refresh.clone();
             spawn_local(async move {
-                get_client()
+                let res = get_client()
                     .post(format!("{}/api/post_comment", get_origin()))
                     .json(&comment)
                     .send()
                     .await
-                    .expect("create fail");
-                textarea.set_value("");
-                refresh.set(!(*refresh));
+                    .expect("create fail")
+                    .text()
+                    .await
+                    .unwrap();
+                if res == "success" {
+                    textarea.set_value("");
+                    refresh.set(!(*refresh));
+                } else {
+                    alert(&res);
+                }
             })
         })
     };
     html! {
         <div class="post">
             <section class="mt-4 p-4 bg-white rounded shadow shadow-gray-300">
-                <h1 class="text-xl">{&((*post)).title}</h1>
-                <div>{&*post.username}{"发布于"}{(*post).create_at.format("%Y-%m-%d %H:%M:%S")}</div>
-                <Markdown source={(*post).body.to_string()} />
+                <h1 class="pb-2 text-xl">{&((*post)).title}</h1>
+                <div class="text-sm text-slate-500">{&*post.username}{"发布于"}{(*post).create_at.format("%Y-%m-%d %H:%M:%S")}</div>
+                <Markdown class="pt-2" source={(*post).body.to_string()} />
             </section>
             <section class="mt-4 p-4 bg-white rounded shadow shadow-gray-300">
                 <textarea ref={textarea_ref} class="w-full p-2 border rounded border-gray-200 block" placeholder="输入评论"/>
@@ -124,7 +134,16 @@ pub fn post(props: &PostProps) -> Html {
                 {
                     (*comments).iter().map(|item| {
                         html! {
-                            <div class="py-2 border-t border-gray-100">{ &item.body }</div>
+                            <div class="flex py-2 border-t border-gray-100">
+                                <div></div>
+                                <div class="flex-auto">
+                                    <div class="flex justify-between">
+                                        <span>{ &item.username }</span>
+                                        <span class="text-slate-400">{ &item.create_at.format("%m-%d %H:%M:%S") }</span>
+                                    </div>
+                                    <div class="">{ &item.body }</div>
+                                </div>
+                            </div>
                         }
                     }).collect::<Html>()
                 }

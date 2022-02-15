@@ -1,4 +1,4 @@
-use crate::{db, models::Comment};
+use crate::{db, models::CommentAndUser};
 use actix_web::{get, web, HttpResponse, Responder};
 use diesel::prelude::*;
 use serde::Deserialize;
@@ -10,17 +10,18 @@ pub struct CommentQuery {
 
 #[get("/comments")]
 async fn comments(query: web::Query<CommentQuery>) -> impl Responder {
-    use crate::schema::comments::dsl::*;
-    if db::can_connect() {
-        let connection = db::get_connection();
-        let results = comments
-            .filter(post.eq(query.id))
-            .order(id.desc())
-            .limit(20)
-            .load::<Comment>(&connection)
-            .expect("Error loading comments");
-        HttpResponse::Ok().json(results)
-    } else {
-        HttpResponse::Ok().body("cannot connect to db")
-    }
+    use crate::schema::{
+        comments::dsl::*,
+        users::dsl::{username, users},
+    };
+    let connection = db::get_connection();
+    let results = comments
+        .inner_join(users)
+        .filter(post.eq(query.id))
+        .order(id.desc())
+        .limit(20)
+        .select((id, body, create_at, author, username))
+        .load::<CommentAndUser>(&connection)
+        .expect("Error loading comments");
+    HttpResponse::Ok().json(results)
 }

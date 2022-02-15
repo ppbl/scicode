@@ -42,37 +42,29 @@ fn get_after_days(n: u64) -> usize {
 #[post("/sign_in")]
 async fn sign_in(req_body: web::Json<Body>) -> impl Responder {
     use crate::schema::users::dsl::*;
-    if db::can_connect() {
-        let connection = db::get_connection();
-
-        let results = users
-            .filter(username.eq(&req_body.username))
-            .get_result::<User>(&connection);
-        if let Ok(results) = results {
-            let passwd = req_body.password.as_bytes();
-            let matches = argon2::verify_encoded(&results.password, passwd).unwrap();
-            if matches {
-                let claims = Claims {
-                    userid: results.id,
-                    username: results.username,
-                    exp: get_after_days(7),
-                };
-                let token = encode(
-                    &Header::default(),
-                    &claims,
-                    &EncodingKey::from_secret(SECRET.as_ref()),
-                )
-                .unwrap();
-                HttpResponse::Ok().json(SignInResponse {
-                    status: "success",
-                    data: &token,
-                })
-            } else {
-                HttpResponse::Ok().json(SignInResponse {
-                    status: "error",
-                    data: "账号或密码不匹配",
-                })
-            }
+    let connection = db::get_connection();
+    let results = users
+        .filter(username.eq(&req_body.username))
+        .get_result::<User>(&connection);
+    if let Ok(results) = results {
+        let passwd = req_body.password.as_bytes();
+        let matches = argon2::verify_encoded(&results.password, passwd).unwrap();
+        if matches {
+            let claims = Claims {
+                userid: results.id,
+                username: results.username,
+                exp: get_after_days(7),
+            };
+            let token = encode(
+                &Header::default(),
+                &claims,
+                &EncodingKey::from_secret(SECRET.as_ref()),
+            )
+            .unwrap();
+            HttpResponse::Ok().json(SignInResponse {
+                status: "success",
+                data: &token,
+            })
         } else {
             HttpResponse::Ok().json(SignInResponse {
                 status: "error",
@@ -80,6 +72,9 @@ async fn sign_in(req_body: web::Json<Body>) -> impl Responder {
             })
         }
     } else {
-        HttpResponse::InternalServerError().body("cannot connect to db")
+        HttpResponse::Ok().json(SignInResponse {
+            status: "error",
+            data: "账号或密码不匹配",
+        })
     }
 }

@@ -2,6 +2,7 @@ use crate::components::button::Button;
 use crate::utils::get_origin::get_origin;
 use crate::utils::request::get_client;
 use crate::Route;
+use gloo::dialogs::alert;
 use std::collections::HashMap;
 use wasm_bindgen_futures::spawn_local;
 use web_sys::{HtmlInputElement, HtmlTextAreaElement};
@@ -27,13 +28,20 @@ pub fn create_post() -> Html {
 
             let history = history.clone();
             spawn_local(async move {
-                get_client()
+                let res = get_client()
                     .post(format!("{}/api/create_post", get_origin()))
                     .json(&map)
                     .send()
                     .await
-                    .expect("create fail");
-                history.push(Route::Home);
+                    .expect("create fail")
+                    .text()
+                    .await
+                    .unwrap();
+                if res == "success" {
+                    history.push(Route::Home);
+                } else {
+                    alert(&res);
+                }
             })
         })
     };

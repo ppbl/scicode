@@ -53,6 +53,7 @@ pub fn sign_in() -> Html {
                         .set_item("token", &res.data)
                         .unwrap();
                     history.push(Route::Home);
+                    window().location().reload().unwrap();
                 } else {
                     alert("登录失败");
                 }
