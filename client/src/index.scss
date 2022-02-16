@@ -61,34 +61,4 @@ body {
   display: grid;
   grid-template-rows: 30px auto 30px;
   grid-gap: 20px;
-
-  .post-content {
-    min-height: 200px;
-  }
-
-  .post-confirm {
-    width: 60px;
-    outline: white;
-    &:hover {
-      border: none;
-      background-color: skyblue;
-      border-radius: 3px;
-      transition: all 0.3s;
-      color: azure;
-    }
-  }
-
-  .post-title,
-  .post-content {
-    padding: 10px;
-    width: 100%;
-    outline: white;
-    border: none;
-    &:hover,
-    &:focus {
-      border-radius: 5px;
-      outline: 1px solid skyblue;
-      transition: all 0.3s;
-    }
-  }
 }

@@ -15,12 +15,24 @@ use crate::components::button::Button;
 pub struct PostProps {
     pub id: i32,
 }
+
+#[derive(Clone, PartialEq, Deserialize)]
+pub struct Topics {
+    pub id: i32,
+    pub name: String,
+}
+#[derive(Clone, PartialEq, Deserialize)]
+pub struct User {
+    pub id: i32,
+    pub username: String,
+}
 #[derive(Clone, PartialEq, Deserialize)]
 pub struct PostBody {
     id: i32,
     title: String,
     body: String,
-    username: String,
+    topics: Vec<Topics>,
+    author: User,
     create_at: NaiveDateTime,
 }
 
@@ -46,7 +58,14 @@ pub fn post(props: &PostProps) -> Html {
         id: 0,
         title: "".to_string(),
         body: "".to_string(),
-        username: "".to_string(),
+        topics: vec![Topics {
+            id: 0,
+            name: "".to_string(),
+        }],
+        author: User {
+            id: 0,
+            username: "".to_string(),
+        },
         create_at: Local::now().naive_local(),
     });
 
@@ -123,8 +142,15 @@ pub fn post(props: &PostProps) -> Html {
     html! {
         <div class="post">
             <section class="mt-4 p-4 bg-white rounded shadow shadow-gray-300">
+                <div>
+                {(*post).topics.iter().map(|item| {
+                    html! {
+                        <span class="p-1 rounded bg-blue-100 text-blue-600">{ &item.name }</span>
+                    }
+                }).collect::<Html>()}
+                </div>
                 <h1 class="pb-2 text-xl">{&((*post)).title}</h1>
-                <div class="text-sm text-slate-500">{&*post.username}{"发布于"}{(*post).create_at.format("%Y-%m-%d %H:%M:%S")}</div>
+                <div class="text-sm text-slate-500">{&*post.author.username}{"发布于"}{(*post).create_at.format("%Y-%m-%d %H:%M:%S")}</div>
                 <Markdown class="pt-2" source={(*post).body.to_string()} />
             </section>
             <section class="mt-4 p-4 bg-white rounded shadow shadow-gray-300">

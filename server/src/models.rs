@@ -1,6 +1,6 @@
 use crate::schema::*;
 use chrono::NaiveDateTime;
-use serde::Serialize;
+use serde::{Serialize};
 
 #[derive(Queryable, Serialize)]
 pub struct CommentAndUser {
@@ -25,6 +25,7 @@ pub struct NewComment<'a> {
     pub post: &'a i32,
     pub author: &'a i32,
 }
+
 #[derive(Queryable, Serialize)]
 pub struct Post {
     pub id: i32,
@@ -32,17 +33,31 @@ pub struct Post {
     pub body: String,
     pub published: bool,
     pub author: i32,
+    pub topics: Vec<i32>,
     pub create_at: NaiveDateTime,
 }
-
+#[derive(Debug,Clone, Queryable, Serialize)]
+pub struct SomeUser {
+    pub id: i32,
+    pub username: String,
+}
 #[derive(Queryable, Serialize)]
 pub struct PostAndUser {
     pub id: i32,
     pub title: String,
     pub body: String,
-    pub author: i32,
+    pub topics: Vec<i32>,
+    pub author: SomeUser,
     pub create_at: NaiveDateTime,
-    pub username: String,
+}
+#[derive(Queryable, Serialize)]
+pub struct PostAndUserAndTopics {
+    pub id: i32,
+    pub title: String,
+    pub body: String,
+    pub topics: Vec<Topics>,
+    pub author: SomeUser,
+    pub create_at: NaiveDateTime,
 }
 
 #[derive(Insertable)]
@@ -50,10 +65,16 @@ pub struct PostAndUser {
 pub struct NewPost<'a> {
     pub title: &'a str,
     pub body: &'a str,
+    pub topics: &'a Vec<i32>,
     pub published: &'a bool,
     pub author: &'a i32,
 }
 
+#[derive(Debug, Clone, Queryable, Serialize)]
+pub struct Topics {
+    pub id: i32,
+    pub name: String,
+}
 #[derive(Debug, Queryable, Serialize)]
 pub struct User {
     pub id: i32,

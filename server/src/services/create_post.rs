@@ -4,10 +4,7 @@ use crate::{
     schema::posts,
     services::sign_in::{Claims, SECRET},
 };
-use actix_web::{
-    http::{header::AUTHORIZATION, HeaderValue},
-    post, web, HttpRequest, HttpResponse, Responder,
-};
+use actix_web::{http::header::AUTHORIZATION, post, web, HttpRequest, HttpResponse, Responder};
 use diesel::prelude::*;
 use jsonwebtoken::{decode, DecodingKey, Validation};
 use serde::Deserialize;
@@ -16,6 +13,7 @@ use serde::Deserialize;
 struct Body {
     title: String,
     body: String,
+    topics: Vec<i32>,
 }
 
 #[post("/create_post")]
@@ -40,6 +38,7 @@ async fn create_post(req_body: web::Json<Body>, req: HttpRequest) -> impl Respon
         let post = NewPost {
             title: &req_body.title,
             body: &req_body.body,
+            topics: &req_body.topics,
             published: &true,
             author: &claims.userid,
         };

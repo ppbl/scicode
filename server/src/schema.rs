@@ -15,7 +15,25 @@ table! {
         body -> Text,
         published -> Bool,
         author -> Int4,
+        topics -> Array<Int4>,
         create_at -> Timestamp,
+    }
+}
+
+table! {
+    posts_thumbs (id) {
+        id -> Int4,
+        post -> Int4,
+        author -> Int4,
+        up -> Bool,
+        create_at -> Timestamp,
+    }
+}
+
+table! {
+    topics (id) {
+        id -> Int4,
+        name -> Varchar,
     }
 }
 
@@ -30,9 +48,13 @@ table! {
 joinable!(comments -> posts (post));
 joinable!(comments -> users (author));
 joinable!(posts -> users (author));
+joinable!(posts_thumbs -> posts (post));
+joinable!(posts_thumbs -> users (author));
 
 allow_tables_to_appear_in_same_query!(
     comments,
     posts,
+    posts_thumbs,
+    topics,
     users,
 );
