@@ -17,6 +17,8 @@ table! {
         author -> Int4,
         topics -> Array<Int4>,
         create_at -> Timestamp,
+        ups -> Int4,
+        downs -> Int4,
     }
 }
 
@@ -25,7 +27,7 @@ table! {
         id -> Int4,
         post -> Int4,
         author -> Int4,
-        up -> Bool,
+        voting -> Nullable<Bool>,
         create_at -> Timestamp,
     }
 }

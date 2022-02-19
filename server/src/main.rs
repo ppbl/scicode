@@ -9,8 +9,9 @@ mod schema;
 mod services;
 
 use services::{
-    comments::comments, create_post::create_post, delete_post::delete_post, post::post,
-    post_comment::post_comment, posts::posts, sign_in::sign_in, sign_up::sign_up,
+    comments::comments, create_post::create_post, create_topic::create_topic,
+    delete_post::delete_post, post::post, post_comment::post_comment, posts::posts,
+    sign_in::sign_in, sign_up::sign_up, vote::vote,
 };
 
 #[actix_web::main]
@@ -25,6 +26,8 @@ async fn main() -> std::io::Result<()> {
             .service(comments)
             .service(sign_up)
             .service(sign_in)
+            .service(create_topic)
+            .service(vote)
     })
     .bind("127.0.0.1:8000")?
     .run()

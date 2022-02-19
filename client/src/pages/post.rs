@@ -1,9 +1,11 @@
+use std::collections::HashMap;
+
 use crate::{
     components::markdown::Markdown,
     utils::{get_origin::*, request::get_client},
 };
 use chrono::prelude::*;
-use gloo::dialogs::alert;
+use gloo::{console::log, dialogs::alert};
 use serde::{Deserialize, Serialize};
 use wasm_bindgen_futures::spawn_local;
 use web_sys::HtmlTextAreaElement;
@@ -34,6 +36,9 @@ pub struct PostBody {
     topics: Vec<Topics>,
     author: User,
     create_at: NaiveDateTime,
+    ups: i32,
+    downs: i32,
+    voting: Option<bool>,
 }
 
 #[derive(Serialize)]
@@ -43,12 +48,24 @@ struct NewComment {
 }
 
 #[derive(Deserialize)]
+struct ThumbsRes {
+    ups: i32,
+    downs: i32,
+    voting: Option<bool>,
+}
+
+#[derive(Deserialize)]
 struct Comment {
     id: i32,
     body: String,
     create_at: NaiveDateTime,
     author: i32,
     username: String,
+}
+#[derive(Serialize)]
+struct VoteBody {
+    post: i32,
+    vote_type: String,
 }
 
 #[function_component(Post)]
@@ -67,6 +84,9 @@ pub fn post(props: &PostProps) -> Html {
             username: "".to_string(),
         },
         create_at: Local::now().naive_local(),
+        ups: 0,
+        downs: 0,
+        voting: None,
     });
 
     {
@@ -75,7 +95,9 @@ pub fn post(props: &PostProps) -> Html {
         use_effect_with_deps(
             move |_| {
                 spawn_local(async move {
-                    let body: PostBody = reqwest::get(format!("{}/api/post?id={id}", get_origin()))
+                    let body = get_client()
+                        .get(format!("{}/api/post?id={id}", get_origin()))
+                        .send()
                         .await
                         .expect("request fail")
                         .json()
@@ -139,19 +161,89 @@ pub fn post(props: &PostProps) -> Html {
             })
         })
     };
+
+    fn vote(post_id: i32, vote_type: &'static str, post: &UseStateHandle<PostBody>) {
+        let post = post.clone();
+        let body = VoteBody {
+            post: post_id,
+            vote_type: vote_type.to_string(),
+        };
+        spawn_local(async move {
+            let res = get_client()
+                .post(format!("{}/api/vote", get_origin()))
+                .json(&body)
+                .send()
+                .await
+                .expect("vote fail")
+                .json::<ThumbsRes>()
+                .await
+                .expect("failed ---------------");
+            let mut next_post = (*post).clone();
+            next_post.ups = res.ups;
+            next_post.downs = res.downs;
+            next_post.voting = res.voting;
+            post.set(next_post);
+        });
+    }
+
     html! {
         <div class="post">
             <section class="mt-4 p-4 bg-white rounded shadow shadow-gray-300">
-                <div>
+                <div class="mb-2">
                 {(*post).topics.iter().map(|item| {
                     html! {
-                        <span class="p-1 rounded bg-blue-100 text-blue-600">{ &item.name }</span>
+                        <span class="mr-2 py-1 px-4 rounded-full bg-blue-100 text-blue-600">{ &item.name }</span>
                     }
                 }).collect::<Html>()}
                 </div>
                 <h1 class="pb-2 text-xl">{&((*post)).title}</h1>
                 <div class="text-sm text-slate-500">{&*post.author.username}{"发布于"}{(*post).create_at.format("%Y-%m-%d %H:%M:%S")}</div>
                 <Markdown class="pt-2" source={(*post).body.to_string()} />
+                <div class="mt-2">
+                    {
+                        html!(
+                            if (*post).voting.is_none() || !(*post).voting.unwrap()  {
+                                    <button onclick={{
+                                        let post = post.clone();
+                                        let post_id = props.id;
+                                        Callback::from(move |_| {
+                                            vote(post_id, "up", &post);
+                                        })
+                                    }}>{"👍"}</button>
+                            }else {
+                                <button onclick={{
+                                    let post = post.clone();
+                                    let post_id = props.id;
+                                    Callback::from(move |_| {
+                                        vote(post_id, "neutral", &post);
+                                    })
+                                }}>{"✊"}</button>
+                            }
+                        )
+                    }
+                    <span class="mx-1">{(post).ups - (post).downs}</span>
+                    {
+                        html!(
+                            if (*post).voting.is_none() || (*post).voting.unwrap() {
+                                <button onclick={{
+                                    let post = post.clone();
+                                    let post_id = props.id;
+                                    Callback::from(move |_| {
+                                        vote(post_id, "down", &post);
+                                    })
+                                }}>{"👎"}</button>
+                            }else {
+                                <button onclick={{
+                                    let post = post.clone();
+                                    let post_id = props.id;
+                                    Callback::from(move |_| {
+                                        vote(post_id, "neutral", &post);
+                                    })
+                                }}>{"✊"}</button>
+                            }
+                        )
+                    }
+                </div>
             </section>
             <section class="mt-4 p-4 bg-white rounded shadow shadow-gray-300">
                 <textarea ref={textarea_ref} class="w-full p-2 border rounded border-gray-200 block" placeholder="输入评论"/>

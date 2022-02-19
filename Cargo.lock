@@ -1986,6 +1986,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "rust_decimal"
+version = "1.21.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4214023b1223d02a4aad9f0bb9828317634a56530870a2eaf7200a99c0c10f68"
+dependencies = [
+ "arrayvec",
+ "num-traits",
+ "serde",
+]
+
+[[package]]
 name = "rustc_version"
 version = "0.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2153,6 +2164,7 @@ dependencies = [
  "nanoid",
  "r2d2",
  "rust-argon2",
+ "rust_decimal",
  "serde",
 ]
 

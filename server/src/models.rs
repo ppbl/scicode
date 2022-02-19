@@ -1,6 +1,7 @@
 use crate::schema::*;
 use chrono::NaiveDateTime;
-use serde::{Serialize};
+use diesel::Insertable;
+use serde::Serialize;
 
 #[derive(Queryable, Serialize)]
 pub struct CommentAndUser {
@@ -26,7 +27,21 @@ pub struct NewComment<'a> {
     pub author: &'a i32,
 }
 
-#[derive(Queryable, Serialize)]
+#[derive(Insertable)]
+#[table_name = "posts_thumbs"]
+pub struct NewVote<'a> {
+    pub post: &'a i32,
+    pub author: &'a i32,
+    pub voting: &'a bool,
+}
+
+#[derive(Insertable)]
+#[table_name = "topics"]
+pub struct NewTopic<'a> {
+    pub name: &'a str,
+}
+
+#[derive(Debug, Queryable, Serialize)]
 pub struct Post {
     pub id: i32,
     pub title: String,
@@ -35,8 +50,18 @@ pub struct Post {
     pub author: i32,
     pub topics: Vec<i32>,
     pub create_at: NaiveDateTime,
+    pub ups: i32,
+    pub downs: i32,
 }
-#[derive(Debug,Clone, Queryable, Serialize)]
+#[derive(Queryable, Clone, Copy, Serialize)]
+pub struct PostThumbs {
+    pub id: i32,
+    pub post: i32,
+    pub author: i32,
+    pub voting: Option<bool>,
+    pub create_at: NaiveDateTime,
+}
+#[derive(Debug, Clone, Queryable, Serialize)]
 pub struct SomeUser {
     pub id: i32,
     pub username: String,
@@ -49,6 +74,8 @@ pub struct PostAndUser {
     pub topics: Vec<i32>,
     pub author: SomeUser,
     pub create_at: NaiveDateTime,
+    pub ups: i32,
+    pub downs: i32,
 }
 #[derive(Queryable, Serialize)]
 pub struct PostAndUserAndTopics {
@@ -58,6 +85,9 @@ pub struct PostAndUserAndTopics {
     pub topics: Vec<Topics>,
     pub author: SomeUser,
     pub create_at: NaiveDateTime,
+    pub ups: i32,
+    pub downs: i32,
+    pub voting: Option<bool>,
 }
 
 #[derive(Insertable)]

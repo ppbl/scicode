@@ -8,7 +8,7 @@
             "name": "localhost",
             "database": "scicode",
             "username": "scicode",
-            "password": "123456.."
+            "password": "123456"
         }
     ],
     "emmet.includeLanguages": {

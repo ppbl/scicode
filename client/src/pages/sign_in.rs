@@ -9,6 +9,7 @@ use yew_router::{history::History, hooks::use_history};
 
 use crate::components::button::Button;
 use crate::utils::get_origin::get_origin;
+use crate::utils::request::get_client;
 use crate::Route;
 
 #[derive(Deserialize)]
@@ -36,7 +37,7 @@ pub fn sign_in() -> Html {
 
             let history = history.clone();
             spawn_local(async move {
-                let res: ResBody = reqwest::Client::new()
+                let res: ResBody = get_client()
                     .post(format!("{}/api/sign_in", get_origin()))
                     .json(&map)
                     .send()

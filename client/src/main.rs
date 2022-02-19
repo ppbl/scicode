@@ -7,7 +7,10 @@ mod pages;
 mod utils;
 
 use components::button::Button;
-use pages::{create_post::CreatePost, home::Home, post::Post, sign_in::SignIn, sign_up::SignUp};
+use pages::{
+    create_post::CreatePost, create_topic::CreateTopic, home::Home, post::Post, sign_in::SignIn,
+    sign_up::SignUp,
+};
 
 use crate::utils::stroage::{get_token, sign_out};
 
@@ -23,6 +26,8 @@ enum Route {
     Post { id: i32 },
     #[at("/create_post")]
     CreatePost,
+    #[at("/create_topic")]
+    CreateTopic,
     #[not_found]
     #[at("/404")]
     NotFound,
@@ -37,6 +42,7 @@ fn switch(routes: &Route) -> Html {
             <Post id={id.clone()}/>
         },
         Route::CreatePost => html! { <CreatePost /> },
+        Route::CreateTopic => html! { <CreateTopic /> },
         Route::NotFound => html! { <h1>{ "404" }</h1> },
     }
 }

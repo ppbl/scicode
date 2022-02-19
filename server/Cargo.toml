@@ -16,4 +16,5 @@ lazy_static = "1"
 nanoid = "0.4.0"
 r2d2 = "0.8.9"
 rust-argon2 = "1.0"
+rust_decimal = {version = "1.21.0", features = ["maths"]}
 serde = "1"
