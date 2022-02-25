@@ -1,11 +1,9 @@
-use std::collections::HashMap;
-
 use crate::{
     components::markdown::Markdown,
     utils::{get_origin::*, request::get_client},
 };
 use chrono::prelude::*;
-use gloo::{console::log, dialogs::alert};
+use gloo::dialogs::alert;
 use serde::{Deserialize, Serialize};
 use wasm_bindgen_futures::spawn_local;
 use web_sys::HtmlTextAreaElement;
@@ -27,6 +25,7 @@ pub struct Topics {
 pub struct User {
     pub id: i32,
     pub username: String,
+    pub avatar_url: Option<String>,
 }
 #[derive(Clone, PartialEq, Deserialize)]
 pub struct PostBody {
@@ -59,8 +58,7 @@ struct Comment {
     id: i32,
     body: String,
     create_at: NaiveDateTime,
-    author: i32,
-    username: String,
+    author: User,
 }
 #[derive(Serialize)]
 struct VoteBody {
@@ -82,6 +80,7 @@ pub fn post(props: &PostProps) -> Html {
         author: User {
             id: 0,
             username: "".to_string(),
+            avatar_url: None,
         },
         create_at: Local::now().naive_local(),
         ups: 0,
@@ -186,23 +185,46 @@ pub fn post(props: &PostProps) -> Html {
         });
     }
 
+    let PostBody {
+        title,
+        body,
+        topics,
+        author,
+        create_at,
+        ups,
+        downs,
+        voting,
+        ..
+    } = &*post;
+
     html! {
         <div class="post">
             <section class="mt-4 p-4 bg-white rounded shadow shadow-gray-300">
                 <div class="mb-2">
-                {(*post).topics.iter().map(|item| {
+                {topics.iter().map(|item| {
                     html! {
                         <span class="mr-2 py-1 px-4 rounded-full bg-blue-100 text-blue-600">{ &item.name }</span>
                     }
                 }).collect::<Html>()}
                 </div>
-                <h1 class="pb-2 text-xl">{&((*post)).title}</h1>
-                <div class="text-sm text-slate-500">{&*post.author.username}{"发布于"}{(*post).create_at.format("%Y-%m-%d %H:%M:%S")}</div>
-                <Markdown class="pt-2" source={(*post).body.to_string()} />
+                <h1 class="pb-2 text-xl">{title}</h1>
+                <div class="flex items-center">
+                    {
+                        if let Some(avatar) = author.avatar_url.clone() {
+                            html!(
+                                <img  class="mr-2 w-8 h-8 rounded-full" src={avatar} alt="" />
+                            )
+                        }else {
+                            html!()
+                        }
+                    }
+                    <div class="text-sm text-slate-500">{author.username.clone()}{"发布于"}{create_at.format("%Y-%m-%d %H:%M:%S")}</div>
+                </div>
+                <Markdown class="pt-2" source={body.to_string()} />
                 <div class="mt-2">
                     {
                         html!(
-                            if (*post).voting.is_none() || !(*post).voting.unwrap()  {
+                            if voting.is_none() || !voting.unwrap()  {
                                     <button onclick={{
                                         let post = post.clone();
                                         let post_id = props.id;
@@ -221,10 +243,10 @@ pub fn post(props: &PostProps) -> Html {
                             }
                         )
                     }
-                    <span class="mx-1">{(post).ups - (post).downs}</span>
+                    <span class="mx-1">{ups - downs}</span>
                     {
                         html!(
-                            if (*post).voting.is_none() || (*post).voting.unwrap() {
+                            if voting.is_none() || voting.unwrap() {
                                 <button onclick={{
                                     let post = post.clone();
                                     let post_id = props.id;
@@ -250,16 +272,26 @@ pub fn post(props: &PostProps) -> Html {
                 <div class="mt-2 flex justify-end"><Button onclick={comment}>{"评论"}</Button></div>
                 <div class="mt-4 py-2 font-semibold">{(*comments).len()}{"条评论"}</div>
                 {
-                    (*comments).iter().map(|item| {
+                    (*comments).iter().map(|Comment{id, body, create_at, author}| {
                         html! {
-                            <div class="flex py-2 border-t border-gray-100">
+                            <div key={id.to_string().clone()} class="flex py-2 border-t border-gray-100">
                                 <div></div>
                                 <div class="flex-auto">
-                                    <div class="flex justify-between">
-                                        <span>{ &item.username }</span>
-                                        <span class="text-slate-400">{ &item.create_at.format("%m-%d %H:%M:%S") }</span>
+                                    <div class="mb-1 flex justify-between">
+                                        <div class="flex items-center">
+                                        {
+                                            match &author.avatar_url{
+                                                Some(avatar_url) => {
+                                                    html!(<img class="w-6 h-6 mr-2 rounded-full" src={avatar_url.clone()} alt="" />)
+                                                }
+                                                None => html!()
+                                            }
+                                        }
+                                            <span>{ &author.username }</span>
+                                        </div>
+                                        <span class="text-slate-400">{ create_at.format("%m-%d %H:%M:%S") }</span>
                                     </div>
-                                    <div class="">{ &item.body }</div>
+                                    <div class="">{ body }</div>
                                 </div>
                             </div>
                         }

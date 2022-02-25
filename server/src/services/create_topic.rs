@@ -2,7 +2,7 @@ use crate::{
     db,
     models::NewTopic,
     schema::topics,
-    services::sign_in::{Claims, SECRET},
+    auth::{Claims, SECRET},
 };
 use actix_web::{http::header::AUTHORIZATION, post, web, HttpRequest, HttpResponse, Responder};
 use diesel::prelude::*;
@@ -29,13 +29,13 @@ async fn create_topic(req_body: web::Json<Body>, req: HttpRequest) -> impl Respo
         if req_body.name.trim() == "" {
             return HttpResponse::Ok().body("please input topic name");
         }
-        let connection = db::get_connection();
+        let conn = db::get_connection();
         let topic = NewTopic {
             name: &req_body.name,
         };
         diesel::insert_into(topics::table)
             .values(&topic)
-            .execute(&connection)
+            .execute(&conn)
             .expect("Error creating new topic");
         HttpResponse::Ok().body("success")
     } else {

@@ -14,4 +14,4 @@ server side use [actix-web](https://actix.rs/) + [diesel](https://diesel.rs/) + 
 ## server
 
 `cargo install cargo-watch`  
-`cargo watch -x 'run --bin server'`
+`cargo watch -x 'run --bin scicode_server'`

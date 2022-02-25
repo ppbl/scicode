@@ -1,3 +1,4 @@
+use chrono::NaiveDateTime;
 use gloo::dialogs::alert;
 use serde::Deserialize;
 use wasm_bindgen_futures::spawn_local;
@@ -9,11 +10,19 @@ use crate::{
     Route,
 };
 
+use super::post::User;
+
 #[derive(Clone, PartialEq, Deserialize)]
-struct Post {
+pub struct PostBody {
     id: i32,
     title: String,
     body: String,
+    topics: Vec<i32>,
+    author: User,
+    create_at: NaiveDateTime,
+    ups: i32,
+    downs: i32,
+    voting: Option<bool>,
 }
 
 #[function_component(Home)]
@@ -26,7 +35,7 @@ pub fn home() -> Html {
         use_effect_with_deps(
             move |_| {
                 spawn_local(async move {
-                    let body: Vec<Post> = reqwest::get(format!("{}/api/posts", get_origin()))
+                    let body: Vec<PostBody> = reqwest::get(format!("{}/api/posts", get_origin()))
                         .await
                         .expect("request fail")
                         .json()
@@ -40,7 +49,7 @@ pub fn home() -> Html {
         );
     };
 
-    fn delete(id: i32, posts: &UseStateHandle<Vec<Post>>) {
+    fn delete(id: i32, posts: &UseStateHandle<Vec<PostBody>>) {
         let posts = posts.clone();
         spawn_local(async move {
             let res = get_client()
@@ -62,25 +71,37 @@ pub fn home() -> Html {
     html! {
         <ul class="posts">
         {
-            (*posts).iter().map(|item| html!{
+            (*posts).iter().map(|PostBody { id, title, author, .. }| html!{
                 <li class="posts-item">
                     <div class="posts-item-title" onclick={
                         let history = history.clone();
-                        let id = item.id;
+                        let id = *id;
                         Callback::from(move |_| {
                             history.push(Route::Post {
                                 id,
                             })
-                        })
-                }>{ &item.title }</div>
-                <span class="posts-item-delete" onclick={
-                    let posts = posts.clone();
-                    let id = item.id;
-                    Callback::from( move |_| {
-                        delete(id, &posts);
-                    })
-                }
-                    >{"删除"}</span>
+                        })}
+                    >
+                        <div class="mb-2 flex items-center">
+                            {
+                                match &author.avatar_url{
+                                    Some(avatar_url) => html!(<img class="w-6 h-6 rounded-full mr-2" src={avatar_url.clone()} alt="" />),
+                                    None => html!()
+                                }
+                            }
+                            <span>{&author.username}</span>
+                        </div>
+                        <div>{ title }</div>
+                    </div>
+                    <span class="posts-item-delete" onclick={
+                        let posts = posts.clone();
+                        let id = *id;
+                        Callback::from( move |_| {
+                            delete(id, &posts);
+                        })}
+                    >
+                        {"删除"}
+                    </span>
                 </li>
             }).collect::<Html>()
         }

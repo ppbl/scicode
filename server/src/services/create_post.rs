@@ -1,8 +1,7 @@
 use crate::{
+    auth::{Claims, SECRET},
     db,
-    models::{NewPost, Post},
-    schema::posts,
-    services::sign_in::{Claims, SECRET},
+    models::{NewPost, Post, Topics},
 };
 use actix_web::{http::header::AUTHORIZATION, post, web, HttpRequest, HttpResponse, Responder};
 use diesel::prelude::*;
@@ -18,6 +17,8 @@ struct Body {
 
 #[post("/create_post")]
 async fn create_post(req_body: web::Json<Body>, req: HttpRequest) -> impl Responder {
+    use crate::schema::posts::dsl::*;
+    use crate::schema::topics::dsl::{id as topics_id, topics};
     let token = req.headers().get(AUTHORIZATION);
     if let Some(token) = token {
         let token = token.to_str().unwrap().split(" ").collect::<Vec<&str>>();
@@ -34,7 +35,20 @@ async fn create_post(req_body: web::Json<Body>, req: HttpRequest) -> impl Respon
         if req_body.body.trim() == "" {
             return HttpResponse::Ok().body("please input body");
         }
-        let connection = db::get_connection();
+        let conn = db::get_connection();
+        let verify_topic = topics
+            .filter(topics_id.eq_any(&req_body.topics))
+            .load::<Topics>(&conn);
+        let mut invalid_topic = true;
+        if let Ok(verify_topic) = verify_topic {
+            if verify_topic.len() > 0 {
+                invalid_topic = false
+            }
+        }
+        if invalid_topic {
+            return HttpResponse::Ok().body("Please enter the correct topic");
+        }
+
         let post = NewPost {
             title: &req_body.title,
             body: &req_body.body,
@@ -42,12 +56,12 @@ async fn create_post(req_body: web::Json<Body>, req: HttpRequest) -> impl Respon
             published: &true,
             author: &claims.userid,
         };
-        diesel::insert_into(posts::table)
+        diesel::insert_into(posts)
             .values(&post)
-            .get_result::<Post>(&connection)
+            .get_result::<Post>(&conn)
             .expect("Error saving new post");
-        HttpResponse::Ok().body("success")
+        HttpResponse::Ok().body("Success")
     } else {
-        HttpResponse::Ok().body("please sgin in")
+        HttpResponse::Ok().body("Please sgin in")
     }
 }

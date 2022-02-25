@@ -1,10 +1,8 @@
 use crate::{
+    auth::{Claims, SECRET},
     db,
     models::Post,
-    services::{
-        post::PostQuery,
-        sign_in::{Claims, SECRET},
-    },
+    services::post::PostQuery,
 };
 use actix_web::{delete, http::header::AUTHORIZATION, web, HttpRequest, HttpResponse, Responder};
 use diesel::prelude::*;

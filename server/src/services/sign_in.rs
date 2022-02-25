@@ -3,7 +3,11 @@ use std::{
     usize,
 };
 
-use crate::{db, models::User};
+use crate::{
+    db,
+    models::User,
+    auth::{Claims, SECRET},
+};
 use actix_web::{post, web, HttpResponse, Responder};
 use diesel::prelude::*;
 use jsonwebtoken::{encode, EncodingKey, Header};
@@ -22,15 +26,6 @@ struct Response<T> {
 }
 type SignInResponse<'a> = Response<&'a str>;
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct Claims {
-    pub userid: i32,
-    pub username: String,
-    exp: usize,
-}
-
-pub const SECRET: &'static str = "balabala";
-
 fn get_after_days(n: u64) -> usize {
     (SystemTime::now()
         .duration_since(UNIX_EPOCH)
@@ -42,13 +37,13 @@ fn get_after_days(n: u64) -> usize {
 #[post("/sign_in")]
 async fn sign_in(req_body: web::Json<Body>) -> impl Responder {
     use crate::schema::users::dsl::*;
-    let connection = db::get_connection();
+    let conn = db::get_connection();
     let results = users
         .filter(username.eq(&req_body.username))
-        .get_result::<User>(&connection);
+        .get_result::<User>(&conn);
     if let Ok(results) = results {
         let passwd = req_body.password.as_bytes();
-        let matches = argon2::verify_encoded(&results.password, passwd).unwrap();
+        let matches = argon2::verify_encoded(&results.password.unwrap(), passwd).unwrap();
         if matches {
             let claims = Claims {
                 userid: results.id,

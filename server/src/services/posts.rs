@@ -1,6 +1,10 @@
 use std::{cmp::Ordering, ops::Mul};
 
-use crate::{db, models::Post};
+use crate::{
+    db,
+    models::{Post, PostAndUser},
+    schema::users::{avatar_url, username},
+};
 use actix_web::{get, HttpResponse, Responder};
 use chrono::Local;
 use diesel::prelude::*;
@@ -24,12 +28,24 @@ fn get_hot_value(ups: i64, downs: i64, publish_date: chrono::NaiveDateTime) -> i
 #[get("/posts")]
 async fn posts() -> impl Responder {
     use crate::schema::posts::dsl::*;
-    let connection = db::get_connection();
+    use crate::schema::users::dsl::{avatar_url, id as user_id, username, users};
+    let conn = db::get_connection();
 
     let mut results = posts
+        .inner_join(users)
         .filter(published.eq(true))
         .order(create_at.desc())
-        .load::<Post>(&connection)
+        .select((
+            id,
+            title,
+            body,
+            topics,
+            (user_id, username, avatar_url),
+            create_at,
+            ups,
+            downs,
+        ))
+        .load::<PostAndUser>(&conn)
         .expect("Error loading posts");
     results.sort_by(|prev, curr| {
         let order = get_hot_value(curr.ups as i64, curr.downs as i64, curr.create_at)

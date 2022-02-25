@@ -1,13 +1,12 @@
 [package]
 edition = "2021"
-name = "server"
+name = "scicode_server"
 version = "0.1.0"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-actix-cors = "0.5"
-actix-web = "3"
+actix-web = "4.0.0-rc.3"
 chrono = {version = "0.4.19", features = ["serde"]}
 diesel = {version = "1", features = ["postgres", "r2d2", "chrono"]}
 dotenv = "0.15"
@@ -15,6 +14,8 @@ jsonwebtoken = "8"
 lazy_static = "1"
 nanoid = "0.4.0"
 r2d2 = "0.8.9"
+reqwest = {version = "0.11", features = ["json"]}
 rust-argon2 = "1.0"
 rust_decimal = {version = "1.21.0", features = ["maths"]}
-serde = "1"
+serde = "1.0"
+serde_json = "1.0"

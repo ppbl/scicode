@@ -8,8 +8,7 @@ pub struct CommentAndUser {
     pub id: i32,
     pub body: String,
     pub create_at: NaiveDateTime,
-    pub author: i32,
-    pub username: String,
+    pub author: SomeUser,
 }
 #[derive(Queryable, Serialize)]
 pub struct Comment {
@@ -65,6 +64,7 @@ pub struct PostThumbs {
 pub struct SomeUser {
     pub id: i32,
     pub username: String,
+    pub avatar_url: Option<String>,
 }
 #[derive(Queryable, Serialize)]
 pub struct PostAndUser {
@@ -109,11 +109,17 @@ pub struct Topics {
 pub struct User {
     pub id: i32,
     pub username: String,
-    pub password: String,
+    pub password: Option<String>,
+    pub github_id: Option<i64>,
+    pub github_url: Option<String>,
+    pub avatar_url: Option<String>,
 }
 #[derive(Insertable)]
 #[table_name = "users"]
 pub struct NewUser<'a> {
     pub username: &'a str,
-    pub password: &'a str,
+    pub password: Option<&'a str>,
+    pub github_id: Option<&'a i64>,
+    pub github_url: Option<&'a str>,
+    pub avatar_url: Option<&'a str>,
 }

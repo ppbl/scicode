@@ -43,7 +43,10 @@ table! {
     users (id) {
         id -> Int4,
         username -> Varchar,
-        password -> Varchar,
+        password -> Nullable<Varchar>,
+        github_id -> Nullable<Int8>,
+        github_url -> Nullable<Varchar>,
+        avatar_url -> Nullable<Varchar>,
     }
 }
 

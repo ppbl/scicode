@@ -10,18 +10,25 @@ pub struct ButtonProps {
 }
 
 #[function_component(Button)]
-pub fn button(props: &ButtonProps) -> Html {
+pub fn button(
+    ButtonProps {
+        children,
+        class,
+        onclick,
+    }: &ButtonProps,
+) -> Html {
     html!(
         <button
             class={
                 format!(
-                    "flex items-center justify-center px-4 py-1 rounded text-white bg-indigo-600 hover:bg-indigo-700 text-sm {}",
-                    &props.class
+                    "flex items-center justify-center px-4 py-1 rounded
+                    text-white bg-indigo-600 hover:bg-indigo-700 text-sm {}",
+                    class
                 )
             }
-            onclick={&props.onclick}
+            onclick={onclick}
         >
-        { props.children.clone() }
+        { children.clone() }
         </button>
     )
 }

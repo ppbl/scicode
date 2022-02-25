@@ -37,7 +37,7 @@ fn switch(routes: &Route) -> Html {
     match routes {
         Route::Home => html! { <Home /> },
         Route::SignIn => html! { <SignIn /> },
-        Route::SignUp => html! { <SignUp /> },
+        Route::SignUp => html! { "Registration is temporarily closed" },
         Route::Post { id } => html! {
             <Post id={id.clone()}/>
         },
@@ -59,7 +59,7 @@ fn app() -> Html {
         <BrowserRouter>
             <header class="header">
                 <Link<Route> classes="header-logo" to={Route::Home}>
-                    {"scicode"}
+                    {"Scicode"}
                 </Link<Route>>
                 <div class="flex gap-2">
                     <Link<Route> to={Route::CreatePost}>
@@ -72,14 +72,9 @@ fn app() -> Html {
                             )
                         }else {
                             html!(
-                                <>
                                 <Link<Route> to={Route::SignIn}>
                                     <Button>{ "登录" }</Button>
                                 </Link<Route>>
-                                <Link<Route> to={Route::SignUp}>
-                                    <Button>{ "注册" }</Button>
-                                </Link<Route>>
-                                </>
                             )
                         }
                     }

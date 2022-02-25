@@ -2,7 +2,7 @@ use crate::{
     db,
     models::{Comment, NewComment},
     schema::comments,
-    services::sign_in::{Claims, SECRET},
+    auth::{Claims, SECRET},
 };
 use actix_web::{http::header::AUTHORIZATION, post, web, HttpRequest, HttpResponse, Responder};
 use diesel::prelude::*;
@@ -31,7 +31,7 @@ async fn post_comment(req_body: web::Json<Body>, req: HttpRequest) -> impl Respo
         if req_body.body.trim() == "" {
             return HttpResponse::Ok().body("please input body");
         }
-        let connection = db::get_connection();
+        let conn = db::get_connection();
         let comment = NewComment {
             author: &claims.userid,
             post: &req_body.post_id,
@@ -39,7 +39,7 @@ async fn post_comment(req_body: web::Json<Body>, req: HttpRequest) -> impl Respo
         };
         diesel::insert_into(comments::table)
             .values(&comment)
-            .load::<Comment>(&connection)
+            .load::<Comment>(&conn)
             .expect("Error saving new comment");
         HttpResponse::Ok().body("success")
     } else {

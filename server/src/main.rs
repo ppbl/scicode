@@ -2,7 +2,9 @@
 extern crate diesel;
 
 use actix_web::{App, HttpServer};
+use dotenv::dotenv;
 
+mod auth;
 mod db;
 mod models;
 mod schema;
@@ -10,12 +12,13 @@ mod services;
 
 use services::{
     comments::comments, create_post::create_post, create_topic::create_topic,
-    delete_post::delete_post, post::post, post_comment::post_comment, posts::posts,
-    sign_in::sign_in, sign_up::sign_up, vote::vote,
+    delete_post::delete_post, login_oauth::login_oauth, post::post, post_comment::post_comment,
+    posts::posts, sign_in::sign_in, sign_up::sign_up, vote::vote,
 };
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
+    dotenv().ok();
     HttpServer::new(|| {
         App::new()
             .service(posts)
@@ -24,12 +27,13 @@ async fn main() -> std::io::Result<()> {
             .service(delete_post)
             .service(post_comment)
             .service(comments)
-            .service(sign_up)
-            .service(sign_in)
+            // .service(sign_up)
+            // .service(sign_in)
+            .service(login_oauth)
             .service(create_topic)
             .service(vote)
     })
-    .bind("127.0.0.1:8000")?
+    .bind("localhost:8000")?
     .run()
     .await
 }

@@ -1,7 +1,7 @@
 use crate::{
+    auth::{Claims, SECRET},
     db,
     models::{NewVote, Post, PostThumbs},
-    services::sign_in::{Claims, SECRET},
 };
 use actix_web::{http::header::AUTHORIZATION, post, web, HttpRequest, HttpResponse, Responder};
 use diesel::prelude::*;

@@ -35,11 +35,15 @@ pub fn create_post() -> Html {
             let new_post = NewPost {
                 title: input.value(),
                 body: textarea.value(),
-                topics: topics
-                    .value()
-                    .split(",")
-                    .map(|topic_id| topic_id.parse::<i32>().unwrap())
-                    .collect(),
+                topics: if topics.value() == "" {
+                    [-1].to_vec()
+                } else {
+                    topics
+                        .value()
+                        .split(",")
+                        .map(|topic_id| topic_id.parse::<i32>().unwrap())
+                        .collect()
+                },
             };
             let history = history.clone();
             spawn_local(async move {

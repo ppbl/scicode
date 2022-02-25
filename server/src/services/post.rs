@@ -1,7 +1,7 @@
 use crate::{
     db,
     models::{PostAndUser, PostAndUserAndTopics, PostThumbs, Topics},
-    services::sign_in::{Claims, SECRET},
+    auth::{Claims, SECRET},
 };
 use actix_web::{get, http::header::AUTHORIZATION, web, HttpRequest, HttpResponse, Responder};
 use diesel::prelude::*;
@@ -18,7 +18,7 @@ pub async fn post(query: web::Query<PostQuery>, req: HttpRequest) -> impl Respon
     use crate::schema::posts::dsl::*;
     use crate::schema::posts_thumbs;
     use crate::schema::topics::dsl::{id as topics_id, topics as topics_table};
-    use crate::schema::users::dsl::{username, users};
+    use crate::schema::users::dsl::{avatar_url, username, users};
 
     let conn = db::get_connection();
     let results = posts
@@ -29,7 +29,7 @@ pub async fn post(query: web::Query<PostQuery>, req: HttpRequest) -> impl Respon
             title,
             body,
             topics,
-            (author, username),
+            (author, username, avatar_url),
             create_at,
             ups,
             downs,
