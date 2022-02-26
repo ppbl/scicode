@@ -41,6 +41,7 @@ body {
   &-delete {
     margin-left: auto;
     cursor: pointer;
+    font-size: 14px;
     &:hover {
       padding: 0 5px;
       border-radius: 3px;
@@ -53,6 +54,11 @@ body {
 
 .post {
   margin: auto;
+  padding: 0;
+  width: 710px;
+}
+.user {
+  margin: 12px auto;
   padding: 0;
   width: 710px;
 }

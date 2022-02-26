@@ -36,6 +36,7 @@ table! {
     topics (id) {
         id -> Int4,
         name -> Varchar,
+        description -> Nullable<Text>,
     }
 }
 

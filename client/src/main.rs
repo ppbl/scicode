@@ -7,12 +7,8 @@ mod pages;
 mod utils;
 
 use components::button::Button;
-use pages::{
-    create_post::CreatePost, create_topic::CreateTopic, home::Home, post::Post, sign_in::SignIn,
-    sign_up::SignUp,
-};
-
-use crate::utils::stroage::{get_token, sign_out};
+use pages::{CreatePost, CreateTopic, Home, Post, SignIn, SignUp, User};
+use utils::{get_token, sign_out};
 
 #[derive(Clone, Routable, PartialEq)]
 enum Route {
@@ -24,6 +20,8 @@ enum Route {
     SignUp,
     #[at("/post/:id")]
     Post { id: i32 },
+    #[at("/user/:id")]
+    User { id: i32 },
     #[at("/create_post")]
     CreatePost,
     #[at("/create_topic")]
@@ -40,6 +38,9 @@ fn switch(routes: &Route) -> Html {
         Route::SignUp => html! { "Registration is temporarily closed" },
         Route::Post { id } => html! {
             <Post id={id.clone()}/>
+        },
+        Route::User { id } => html! {
+            <User id={id.clone()}/>
         },
         Route::CreatePost => html! { <CreatePost /> },
         Route::CreateTopic => html! { <CreateTopic /> },

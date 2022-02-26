@@ -11,9 +11,8 @@ mod schema;
 mod services;
 
 use services::{
-    comments::comments, create_post::create_post, create_topic::create_topic,
-    delete_post::delete_post, login_oauth::login_oauth, post::post, post_comment::post_comment,
-    posts::posts, sign_in::sign_in, sign_up::sign_up, vote::vote,
+    comments, create_post, create_topic, delete_post, login_oauth, post, post_comment, posts,
+    sign_in, sign_up, topics, user, vote,
 };
 
 #[actix_web::main]
@@ -31,6 +30,8 @@ async fn main() -> std::io::Result<()> {
             // .service(sign_in)
             .service(login_oauth)
             .service(create_topic)
+            .service(topics)
+            .service(user)
             .service(vote)
     })
     .bind("localhost:8000")?

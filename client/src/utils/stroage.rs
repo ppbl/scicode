@@ -6,11 +6,16 @@ pub fn get_token() -> Option<String> {
         .get_item("token")
         .unwrap()
 }
-pub fn sign_out() {
-    let ss = gloo::utils::window()
+pub fn get_userid() -> Option<String> {
+    gloo::utils::window()
         .local_storage()
         .unwrap()
         .unwrap()
-        .remove_item("token")
-        .unwrap();
+        .get_item("userid")
+        .unwrap()
+}
+pub fn sign_out() {
+    let local_stroage = gloo::utils::window().local_storage().unwrap().unwrap();
+    local_stroage.remove_item("token").unwrap();
+    local_stroage.remove_item("userid").unwrap();
 }

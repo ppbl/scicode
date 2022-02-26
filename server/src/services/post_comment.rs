@@ -1,12 +1,11 @@
 use crate::{
+    auth::get_claims,
     db,
     models::{Comment, NewComment},
     schema::comments,
-    auth::{Claims, SECRET},
 };
 use actix_web::{http::header::AUTHORIZATION, post, web, HttpRequest, HttpResponse, Responder};
 use diesel::prelude::*;
-use jsonwebtoken::{decode, DecodingKey, Validation};
 use serde::Deserialize;
 
 #[derive(Deserialize)]
@@ -19,15 +18,7 @@ struct Body {
 async fn post_comment(req_body: web::Json<Body>, req: HttpRequest) -> impl Responder {
     let token = req.headers().get(AUTHORIZATION);
     if let Some(token) = token {
-        let token = token.to_str().unwrap().split(" ").collect::<Vec<&str>>();
-        let claims = decode::<Claims>(
-            token[1],
-            &DecodingKey::from_secret(SECRET.as_ref()),
-            &Validation::default(),
-        )
-        .unwrap()
-        .claims;
-
+        let claims = get_claims(token.to_str().unwrap());
         if req_body.body.trim() == "" {
             return HttpResponse::Ok().body("please input body");
         }

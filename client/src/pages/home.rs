@@ -1,16 +1,11 @@
+use crate::{utils::get_origin, Route};
 use chrono::NaiveDateTime;
-use gloo::dialogs::alert;
 use serde::Deserialize;
 use wasm_bindgen_futures::spawn_local;
 use yew::prelude::*;
 use yew_router::prelude::*;
 
-use crate::{
-    utils::{get_origin::get_origin, request::get_client},
-    Route,
-};
-
-use super::post::User;
+use super::SomeUser;
 
 #[derive(Clone, PartialEq, Deserialize)]
 pub struct PostBody {
@@ -18,7 +13,7 @@ pub struct PostBody {
     title: String,
     body: String,
     topics: Vec<i32>,
-    author: User,
+    author: SomeUser,
     create_at: NaiveDateTime,
     ups: i32,
     downs: i32,
@@ -49,25 +44,6 @@ pub fn home() -> Html {
         );
     };
 
-    fn delete(id: i32, posts: &UseStateHandle<Vec<PostBody>>) {
-        let posts = posts.clone();
-        spawn_local(async move {
-            let res = get_client()
-                .delete(format!("{}/api/delete_post?id={id}", get_origin()))
-                .send()
-                .await
-                .expect("request fail")
-                .text()
-                .await
-                .unwrap();
-            if res == "success" {
-                posts.set(posts.iter().filter(|item| item.id != id).cloned().collect())
-            } else {
-                alert(&res)
-            }
-        })
-    }
-
     html! {
         <ul class="posts">
         {
@@ -93,15 +69,7 @@ pub fn home() -> Html {
                         </div>
                         <div>{ title }</div>
                     </div>
-                    <span class="posts-item-delete" onclick={
-                        let posts = posts.clone();
-                        let id = *id;
-                        Callback::from( move |_| {
-                            delete(id, &posts);
-                        })}
-                    >
-                        {"删除"}
-                    </span>
+
                 </li>
             }).collect::<Html>()
         }

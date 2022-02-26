@@ -1,21 +1,19 @@
+use crate::{
+    auth::{generate_token, Claims},
+    db,
+    models::{NewUser, User},
+};
+use actix_web::{get, web, HttpResponse, Responder};
+use diesel::prelude::*;
+use reqwest::header::{HeaderValue, ACCEPT, AUTHORIZATION, USER_AGENT};
+use serde::{Deserialize, Serialize};
+use serde_json::Value;
 use std::{
     collections::HashMap,
     env,
     time::{SystemTime, UNIX_EPOCH},
     usize,
 };
-
-use crate::{
-    auth::{Claims, SECRET},
-    db,
-    models::{NewUser, User},
-};
-use actix_web::{get, web, HttpResponse, Responder};
-use diesel::prelude::*;
-use jsonwebtoken::{encode, EncodingKey, Header};
-use reqwest::header::{HeaderValue, ACCEPT, AUTHORIZATION, USER_AGENT};
-use serde::{Deserialize, Serialize};
-use serde_json::Value;
 
 #[derive(Deserialize)]
 struct AuthQuery {
@@ -97,24 +95,19 @@ async fn login_oauth(query: web::Query<AuthQuery>) -> impl Responder {
                 .expect("Error saving new user");
         }
     }
-
     let claims = Claims {
         userid: user.id,
         username: user.username,
         exp: get_after_days(7),
     };
-    let token = encode(
-        &Header::default(),
-        &claims,
-        &EncodingKey::from_secret(SECRET.as_ref()),
-    )
-    .unwrap();
+    let token = generate_token(claims);
     HttpResponse::Ok().body(format!(
         "<script>
             window.opener.localStorage.setItem('token', '{}');
+            window.opener.localStorage.setItem('userid', '{}');
             window.opener.location.reload();
             window.close();
         </script>",
-        token
+        token, user.id
     ))
 }

@@ -1,6 +1,7 @@
 use crate::components::button::Button;
-use crate::utils::get_origin::get_origin;
-use crate::utils::request::get_client;
+use crate::pages::Topic;
+use crate::utils::get_client;
+use crate::utils::get_origin;
 use crate::Route;
 use gloo::dialogs::alert;
 use serde::Serialize;
@@ -65,11 +66,38 @@ pub fn create_post() -> Html {
         })
     };
 
+    let topics = use_state(|| Vec::new());
+    {
+        let topics = topics.clone();
+        use_effect_with_deps(
+            move |_| {
+                spawn_local(async move {
+                    let body: Vec<Topic> = reqwest::get(format!("{}/api/topics", get_origin()))
+                        .await
+                        .expect("request fail")
+                        .json()
+                        .await
+                        .expect("parse fail");
+                    topics.set(body);
+                });
+                || ()
+            },
+            (),
+        );
+    };
+
     html! {
         <div class="create-post">
             <input ref={input_ref} class="px-2 py-4 border border-slate-200 rounded" placeholder="输入标题"/>
             <textarea ref={textarea_ref} class="min-h-[200px] px-2 py-4 border border-slate-200 rounded" placeholder="输入正文"/>
             <input ref={topics_ref} class="px-2 py-4 border border-slate-200 rounded" placeholder="输入话题id（多个id用，隔开）"/>
+            <div class="">
+                {
+                    (*topics).iter().map(|Topic { id, name }| {
+                        html!(<span key={id.to_string()} class="mr-2 p-1 border rounded text-slate-500">{name}{"/"}{id}</span>)
+                    }).collect::<Html>()
+                }
+            </div>
             <Button onclick={publish}>{ "提交" }</Button>
         </div>
     }

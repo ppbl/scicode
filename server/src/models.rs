@@ -60,12 +60,7 @@ pub struct PostThumbs {
     pub voting: Option<bool>,
     pub create_at: NaiveDateTime,
 }
-#[derive(Debug, Clone, Queryable, Serialize)]
-pub struct SomeUser {
-    pub id: i32,
-    pub username: String,
-    pub avatar_url: Option<String>,
-}
+
 #[derive(Queryable, Serialize)]
 pub struct PostAndUser {
     pub id: i32,
@@ -104,6 +99,7 @@ pub struct NewPost<'a> {
 pub struct Topics {
     pub id: i32,
     pub name: String,
+    pub description: Option<String>,
 }
 #[derive(Debug, Queryable, Serialize)]
 pub struct User {
@@ -113,6 +109,19 @@ pub struct User {
     pub github_id: Option<i64>,
     pub github_url: Option<String>,
     pub avatar_url: Option<String>,
+}
+#[derive(Debug, Clone, Queryable, Serialize)]
+pub struct SomeUser {
+    pub id: i32,
+    pub username: String,
+    pub avatar_url: Option<String>,
+}
+#[derive(Debug, Clone, Queryable, Serialize)]
+pub struct UserInfo {
+    pub id: i32,
+    pub username: String,
+    pub avatar_url: Option<String>,
+    pub github_url: Option<String>,
 }
 #[derive(Insertable)]
 #[table_name = "users"]

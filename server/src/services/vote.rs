@@ -1,11 +1,10 @@
 use crate::{
-    auth::{Claims, SECRET},
+    auth::get_claims,
     db,
     models::{NewVote, Post, PostThumbs},
 };
 use actix_web::{http::header::AUTHORIZATION, post, web, HttpRequest, HttpResponse, Responder};
 use diesel::prelude::*;
-use jsonwebtoken::{decode, DecodingKey, Validation};
 use serde::{Deserialize, Serialize};
 
 #[derive(Deserialize)]
@@ -27,14 +26,7 @@ async fn vote(req_body: web::Json<Body>, req: HttpRequest) -> impl Responder {
     use crate::schema::posts_thumbs::dsl::*;
     let token = req.headers().get(AUTHORIZATION);
     if let Some(token) = token {
-        let token = token.to_str().unwrap().split(" ").collect::<Vec<&str>>();
-        let claims = decode::<Claims>(
-            token[1],
-            &DecodingKey::from_secret(SECRET.as_ref()),
-            &Validation::default(),
-        )
-        .unwrap()
-        .claims;
+        let claims = get_claims(token.to_str().unwrap());
         let next_voting = if req_body.vote_type == "up" {
             Some(true)
         } else if req_body.vote_type == "down" {

@@ -1,11 +1,10 @@
 use crate::{
-    auth::{Claims, SECRET},
+    auth::get_claims,
     db,
     models::{NewPost, Post, Topics},
 };
 use actix_web::{http::header::AUTHORIZATION, post, web, HttpRequest, HttpResponse, Responder};
 use diesel::prelude::*;
-use jsonwebtoken::{decode, DecodingKey, Validation};
 use serde::Deserialize;
 
 #[derive(Deserialize)]
@@ -21,14 +20,7 @@ async fn create_post(req_body: web::Json<Body>, req: HttpRequest) -> impl Respon
     use crate::schema::topics::dsl::{id as topics_id, topics};
     let token = req.headers().get(AUTHORIZATION);
     if let Some(token) = token {
-        let token = token.to_str().unwrap().split(" ").collect::<Vec<&str>>();
-        let claims = decode::<Claims>(
-            token[1],
-            &DecodingKey::from_secret(SECRET.as_ref()),
-            &Validation::default(),
-        )
-        .unwrap()
-        .claims;
+        let claims = get_claims(token.to_str().unwrap());
         if req_body.title.trim() == "" {
             return HttpResponse::Ok().body("please input title");
         }

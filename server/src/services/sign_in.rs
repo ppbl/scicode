@@ -1,17 +1,15 @@
+use crate::{
+    auth::{generate_token, Claims},
+    db,
+    models::User,
+};
+use actix_web::{post, web, HttpResponse, Responder};
+use diesel::prelude::*;
+use serde::{Deserialize, Serialize};
 use std::{
     time::{SystemTime, UNIX_EPOCH},
     usize,
 };
-
-use crate::{
-    db,
-    models::User,
-    auth::{Claims, SECRET},
-};
-use actix_web::{post, web, HttpResponse, Responder};
-use diesel::prelude::*;
-use jsonwebtoken::{encode, EncodingKey, Header};
-use serde::{Deserialize, Serialize};
 
 #[derive(Deserialize)]
 struct Body {
@@ -50,12 +48,7 @@ async fn sign_in(req_body: web::Json<Body>) -> impl Responder {
                 username: results.username,
                 exp: get_after_days(7),
             };
-            let token = encode(
-                &Header::default(),
-                &claims,
-                &EncodingKey::from_secret(SECRET.as_ref()),
-            )
-            .unwrap();
+            let token = generate_token(claims);
             HttpResponse::Ok().json(SignInResponse {
                 status: "success",
                 data: &token,

@@ -1,11 +1,15 @@
 CREATE TABLE topics (
   id SERIAL PRIMARY KEY,
-  name VARCHAR(16) NOT NULL
+  name VARCHAR(16) NOT NULL,
+  description TEXT
 );
 CREATE TABLE users (
   id SERIAL PRIMARY KEY,
-  username VARCHAR(16) NOT NULL,
-  password VARCHAR NOT NULL
+  username VARCHAR(16) NOT NULL UNIQUE,
+  password VARCHAR,
+  github_id BIGINT UNIQUE,
+  github_url VARCHAR,
+  avatar_url VARCHAR
 );
 CREATE TABLE posts (
   id SERIAL PRIMARY KEY,

@@ -1,14 +1,9 @@
-use std::{cmp::Ordering, ops::Mul};
-
-use crate::{
-    db,
-    models::{Post, PostAndUser},
-    schema::users::{avatar_url, username},
-};
+use crate::{db, models::PostAndUser};
 use actix_web::{get, HttpResponse, Responder};
 use chrono::Local;
 use diesel::prelude::*;
 use rust_decimal::prelude::*;
+use std::{cmp::Ordering, ops::Mul};
 
 // reddit hot post algorithm
 fn get_hot_value(ups: i64, downs: i64, publish_date: chrono::NaiveDateTime) -> i64 {

@@ -1,12 +1,11 @@
+use crate::components::button::Button;
+use crate::utils::get_client;
+use crate::utils::get_origin;
 use gloo::dialogs::alert;
 use std::collections::HashMap;
 use wasm_bindgen_futures::spawn_local;
 use web_sys::HtmlInputElement;
 use yew::prelude::*;
-
-use crate::components::button::Button;
-use crate::utils::get_origin::get_origin;
-use crate::utils::request::get_client;
 
 #[function_component(CreateTopic)]
 pub fn create_topic() -> Html {
@@ -40,7 +39,7 @@ pub fn create_topic() -> Html {
 
     html! {
         <div class="create-post">
-            <input ref={topic_ref} class="post-title" placeholder="输入主题名称"/>
+            <input ref={topic_ref} class="post-title px-2" placeholder="输入主题名称"/>
             <Button onclick={create}>{ "创建" }</Button>
         </div>
     }

@@ -1,15 +1,18 @@
-use crate::{
-    components::markdown::Markdown,
-    utils::{get_origin::*, request::get_client},
-};
+use crate::components::button::Button;
+use crate::pages::Topic;
+use crate::utils::{get_origin, get_userid};
+use crate::Route;
+use crate::{components::markdown::Markdown, utils::get_client};
 use chrono::prelude::*;
-use gloo::dialogs::alert;
+use gloo::dialogs::{alert, confirm};
 use serde::{Deserialize, Serialize};
 use wasm_bindgen_futures::spawn_local;
 use web_sys::HtmlTextAreaElement;
 use yew::prelude::*;
+use yew_router::history::{AnyHistory, History};
+use yew_router::hooks::use_history;
 
-use crate::components::button::Button;
+use super::SomeUser;
 
 #[derive(Properties, PartialEq)]
 pub struct PostProps {
@@ -17,23 +20,12 @@ pub struct PostProps {
 }
 
 #[derive(Clone, PartialEq, Deserialize)]
-pub struct Topics {
-    pub id: i32,
-    pub name: String,
-}
-#[derive(Clone, PartialEq, Deserialize)]
-pub struct User {
-    pub id: i32,
-    pub username: String,
-    pub avatar_url: Option<String>,
-}
-#[derive(Clone, PartialEq, Deserialize)]
 pub struct PostBody {
     id: i32,
     title: String,
     body: String,
-    topics: Vec<Topics>,
-    author: User,
+    topics: Vec<Topic>,
+    author: SomeUser,
     create_at: NaiveDateTime,
     ups: i32,
     downs: i32,
@@ -58,7 +50,7 @@ struct Comment {
     id: i32,
     body: String,
     create_at: NaiveDateTime,
-    author: User,
+    author: SomeUser,
 }
 #[derive(Serialize)]
 struct VoteBody {
@@ -69,15 +61,16 @@ struct VoteBody {
 #[function_component(Post)]
 pub fn post(props: &PostProps) -> Html {
     let refresh = use_state(|| false);
+
     let post = use_state(|| PostBody {
         id: 0,
         title: "".to_string(),
         body: "".to_string(),
-        topics: vec![Topics {
+        topics: vec![Topic {
             id: 0,
             name: "".to_string(),
         }],
-        author: User {
+        author: SomeUser {
             id: 0,
             username: "".to_string(),
             avatar_url: None,
@@ -87,7 +80,6 @@ pub fn post(props: &PostProps) -> Html {
         downs: 0,
         voting: None,
     });
-
     {
         let post = post.clone();
         let id = props.id;
@@ -109,6 +101,7 @@ pub fn post(props: &PostProps) -> Html {
             (),
         );
     };
+
     let comments = use_state(|| Vec::new());
     {
         let comments = comments.clone();
@@ -130,6 +123,7 @@ pub fn post(props: &PostProps) -> Html {
             *refresh,
         );
     };
+
     let textarea_ref = use_node_ref();
     let comment = {
         let textarea_ref = textarea_ref.clone();
@@ -185,7 +179,28 @@ pub fn post(props: &PostProps) -> Html {
         });
     }
 
+    let history = use_history().unwrap();
+    fn delete(id: i32, history: &AnyHistory) {
+        let history = history.clone();
+        spawn_local(async move {
+            let res = get_client()
+                .delete(format!("{}/api/delete_post?id={id}", get_origin()))
+                .send()
+                .await
+                .expect("request fail")
+                .text()
+                .await
+                .unwrap();
+            if res == "success" {
+                history.replace(Route::Home)
+            } else {
+                alert(&res)
+            }
+        })
+    }
+
     let PostBody {
+        id,
         title,
         body,
         topics,
@@ -212,7 +227,7 @@ pub fn post(props: &PostProps) -> Html {
                     {
                         if let Some(avatar) = author.avatar_url.clone() {
                             html!(
-                                <img  class="mr-2 w-8 h-8 rounded-full" src={avatar} alt="" />
+                                <a href={format!("/user/{}", author.id)} target="_blank"><img  class="mr-2 w-8 h-8 rounded-full" src={avatar} alt="" /></a>
                             )
                         }else {
                             html!()
@@ -221,50 +236,77 @@ pub fn post(props: &PostProps) -> Html {
                     <div class="text-sm text-slate-500">{author.username.clone()}{"发布于"}{create_at.format("%Y-%m-%d %H:%M:%S")}</div>
                 </div>
                 <Markdown class="pt-2" source={body.to_string()} />
-                <div class="mt-2">
-                    {
-                        html!(
-                            if voting.is_none() || !voting.unwrap()  {
+                <div class="flex justify-between mt-2">
+                    <div>
+                        {
+                            html!(
+                                if voting.is_none() || !voting.unwrap()  {
+                                        <button onclick={{
+                                            let post = post.clone();
+                                            let post_id = props.id;
+                                            Callback::from(move |_| {
+                                                vote(post_id, "up", &post);
+                                            })
+                                        }}>{"👍"}</button>
+                                }else {
                                     <button onclick={{
                                         let post = post.clone();
                                         let post_id = props.id;
                                         Callback::from(move |_| {
-                                            vote(post_id, "up", &post);
+                                            vote(post_id, "neutral", &post);
                                         })
-                                    }}>{"👍"}</button>
+                                    }}>{"✊"}</button>
+                                }
+                            )
+                        }
+                        <span class="mx-1">{ups - downs}</span>
+                        {
+                            html!(
+                                if voting.is_none() || voting.unwrap() {
+                                    <button onclick={{
+                                        let post = post.clone();
+                                        let post_id = props.id;
+                                        Callback::from(move |_| {
+                                            vote(post_id, "down", &post);
+                                        })
+                                    }}>{"👎"}</button>
+                                }else {
+                                    <button onclick={{
+                                        let post = post.clone();
+                                        let post_id = props.id;
+                                        Callback::from(move |_| {
+                                            vote(post_id, "neutral", &post);
+                                        })
+                                    }}>{"✊"}</button>
+                                }
+                            )
+                        }
+                    </div>
+                    <div>
+                        {
+                            if let Some(userid) = get_userid() {
+                                if author.id.to_string() == userid {
+                                    html!(
+                                        <span class="posts-item-delete" onclick={
+                                            let history = history.clone();
+                                            let id = *id;
+                                            Callback::from( move |_| {
+                                                if confirm("确定删除吗") {
+                                                    delete(id, &history);
+                                                }
+                                            })}
+                                        >
+                                            {"删除"}
+                                        </span>
+                                    )
+                                } else {
+                                    html!()
+                                }
                             }else {
-                                <button onclick={{
-                                    let post = post.clone();
-                                    let post_id = props.id;
-                                    Callback::from(move |_| {
-                                        vote(post_id, "neutral", &post);
-                                    })
-                                }}>{"✊"}</button>
+                                html!()
                             }
-                        )
-                    }
-                    <span class="mx-1">{ups - downs}</span>
-                    {
-                        html!(
-                            if voting.is_none() || voting.unwrap() {
-                                <button onclick={{
-                                    let post = post.clone();
-                                    let post_id = props.id;
-                                    Callback::from(move |_| {
-                                        vote(post_id, "down", &post);
-                                    })
-                                }}>{"👎"}</button>
-                            }else {
-                                <button onclick={{
-                                    let post = post.clone();
-                                    let post_id = props.id;
-                                    Callback::from(move |_| {
-                                        vote(post_id, "neutral", &post);
-                                    })
-                                }}>{"✊"}</button>
-                            }
-                        )
-                    }
+                        }
+                    </div>
                 </div>
             </section>
             <section class="mt-4 p-4 bg-white rounded shadow shadow-gray-300">
@@ -282,7 +324,7 @@ pub fn post(props: &PostProps) -> Html {
                                         {
                                             match &author.avatar_url{
                                                 Some(avatar_url) => {
-                                                    html!(<img class="w-6 h-6 mr-2 rounded-full" src={avatar_url.clone()} alt="" />)
+                                                    html!( <a href={format!("/user/{}", author.id)} target="_blank"><img class="w-6 h-6 mr-2 rounded-full" src={avatar_url.clone()} alt="" /></a> )
                                                 }
                                                 None => html!()
                                             }

@@ -1,11 +1,10 @@
 use crate::{
+    auth::get_claims,
     db,
     models::{PostAndUser, PostAndUserAndTopics, PostThumbs, Topics},
-    auth::{Claims, SECRET},
 };
 use actix_web::{get, http::header::AUTHORIZATION, web, HttpRequest, HttpResponse, Responder};
 use diesel::prelude::*;
-use jsonwebtoken::{decode, DecodingKey, Validation};
 use serde::Deserialize;
 
 #[derive(Deserialize)]
@@ -54,14 +53,7 @@ pub async fn post(query: web::Query<PostQuery>, req: HttpRequest) -> impl Respon
     };
     let token = req.headers().get(AUTHORIZATION);
     if let Some(token) = token {
-        let token = token.to_str().unwrap().split(" ").collect::<Vec<&str>>();
-        let claims = decode::<Claims>(
-            token[1],
-            &DecodingKey::from_secret(SECRET.as_ref()),
-            &Validation::default(),
-        )
-        .unwrap()
-        .claims;
+        let claims = get_claims(token.to_str().unwrap());
         let thumbs = posts_thumbs::table
             .filter(posts_thumbs::post.eq(query.id))
             .filter(posts_thumbs::author.eq(claims.userid))
