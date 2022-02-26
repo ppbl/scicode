@@ -1,3 +1,6 @@
+#[macro_use]
+extern crate dotenv_codegen;
+
 use gloo::utils::window;
 use yew::prelude::*;
 use yew_router::prelude::*;

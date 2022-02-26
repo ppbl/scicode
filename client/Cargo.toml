@@ -7,6 +7,7 @@ version = "0.1.0"
 
 [dependencies]
 chrono = {version = "0.4.19", features = ["serde", "wasmbind"]}
+dotenv_codegen = "0.15.0"
 gloo = "0.6"
 markdown = "0.3"
 reqwest = {version = "0.11", features = ["json"]}

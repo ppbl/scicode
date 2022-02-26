@@ -62,8 +62,10 @@ pub fn sign_in() -> Html {
     // };
 
     let open_authorize_window = {
+        const CLIENT_ID: &str = dotenv!("CLIENT_ID");
+        const REDIRECT_URI: &str = dotenv!("REDIRECT_URI");
         Callback::from(move |_| {
-            window().open_with_url_and_target_and_features("https://github.com/login/oauth/authorize?client_id=346b0d0b5427b64bb33c&redirect_uri=http://localhost:8080/api/login/oauth", "github", "left=0,top=0,width=800,height=600").expect("open fail");
+            window().open_with_url_and_target_and_features(format!("https://github.com/login/oauth/authorize?client_id={CLIENT_ID}&redirect_uri={REDIRECT_URI}").as_str(), "github", "left=0,top=0,width=800,height=600").expect("open fail");
         })
     };
 
