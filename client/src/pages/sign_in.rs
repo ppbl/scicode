@@ -62,8 +62,18 @@ pub fn sign_in() -> Html {
     // };
 
     let open_authorize_window = {
-        const CLIENT_ID: &str = dotenv!("CLIENT_ID");
-        const REDIRECT_URI: &str = dotenv!("REDIRECT_URI");
+        const CLIENT_ID: &str = {
+            match option_env!("CLIENT_ID") {
+                Some(value) => value,
+                None => "346b0d0b5427b64bb33c",
+            }
+        };
+        const REDIRECT_URI: &str = {
+            match option_env!("REDIRECT_URI") {
+                Some(value) => value,
+                None => "http://localhost:8080/api/login/oauth",
+            }
+        };
         Callback::from(move |_| {
             window().open_with_url_and_target_and_features(format!("https://github.com/login/oauth/authorize?client_id={CLIENT_ID}&redirect_uri={REDIRECT_URI}").as_str(), "github", "left=0,top=0,width=800,height=600").expect("open fail");
         })

@@ -9,7 +9,7 @@ pub struct UserProps {
     pub id: i32,
 }
 
-#[derive(Clone, PartialEq, Deserialize)]
+#[derive(Clone, PartialEq, Deserialize, Default)]
 pub struct UserInfo {
     pub id: i32,
     pub username: String,
@@ -19,12 +19,7 @@ pub struct UserInfo {
 
 #[function_component(User)]
 pub fn user(props: &UserProps) -> Html {
-    let user = use_state(|| UserInfo {
-        id: 0,
-        username: "".to_string(),
-        avatar_url: None,
-        github_url: None,
-    });
+    let user = use_state(|| UserInfo::default());
     {
         let user = user.clone();
         let id = props.id;

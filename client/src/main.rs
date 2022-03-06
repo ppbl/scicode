@@ -1,6 +1,3 @@
-#[macro_use]
-extern crate dotenv_codegen;
-
 use gloo::utils::window;
 use yew::prelude::*;
 use yew_router::prelude::*;
@@ -10,7 +7,7 @@ mod pages;
 mod utils;
 
 use components::button::Button;
-use pages::{CreatePost, CreateTopic, Home, Post, SignIn, SignUp, User};
+use pages::{CreatePost, CreateTopic, Home, Post, SignIn, SignUp, TopicPage, User};
 use utils::{get_token, sign_out};
 
 #[derive(Clone, Routable, PartialEq)]
@@ -29,6 +26,8 @@ enum Route {
     CreatePost,
     #[at("/create_topic")]
     CreateTopic,
+    #[at("/:topic")]
+    TopicPage { topic: String },
     #[not_found]
     #[at("/404")]
     NotFound,
@@ -44,6 +43,9 @@ fn switch(routes: &Route) -> Html {
         },
         Route::User { id } => html! {
             <User id={id.clone()}/>
+        },
+        Route::TopicPage { topic } => html! {
+            <TopicPage topic={topic.clone()}/>
         },
         Route::CreatePost => html! { <CreatePost /> },
         Route::CreateTopic => html! { <CreateTopic /> },

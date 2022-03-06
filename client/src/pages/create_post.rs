@@ -42,7 +42,7 @@ pub fn create_post() -> Html {
                     topics
                         .value()
                         .split(",")
-                        .map(|topic_id| topic_id.parse::<i32>().unwrap())
+                        .map(|topic_id| topic_id.parse::<i32>().unwrap_or(-1))
                         .collect()
                 },
             };
@@ -90,14 +90,14 @@ pub fn create_post() -> Html {
         <div class="create-post">
             <input ref={input_ref} class="px-2 py-4 border border-slate-200 rounded" placeholder="输入标题"/>
             <textarea ref={textarea_ref} class="min-h-[200px] px-2 py-4 border border-slate-200 rounded" placeholder="输入正文"/>
-            <input ref={topics_ref} class="px-2 py-4 border border-slate-200 rounded" placeholder="输入话题id（多个id用，隔开）"/>
-            <div class="">
+            <select ref={topics_ref} class="px-1 border border-slate-200 rounded text-gray-400" >
+                <option value="fffsdfsd" >{"请选择一个话题"}</option>
                 {
                     (*topics).iter().map(|Topic { id, name }| {
-                        html!(<span key={id.to_string()} class="mr-2 p-1 border rounded text-slate-500">{name}{"/"}{id}</span>)
+                        html!(<option key={id.to_string()} value={id.to_string()} >{name}</option>)
                     }).collect::<Html>()
                 }
-            </div>
+            </select>
             <Button onclick={publish}>{ "提交" }</Button>
         </div>
     }

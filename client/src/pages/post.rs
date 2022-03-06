@@ -11,6 +11,7 @@ use web_sys::HtmlTextAreaElement;
 use yew::prelude::*;
 use yew_router::history::{AnyHistory, History};
 use yew_router::hooks::use_history;
+use yew_router::prelude::*;
 
 use super::SomeUser;
 
@@ -218,7 +219,7 @@ pub fn post(props: &PostProps) -> Html {
                 <div class="mb-2">
                 {topics.iter().map(|item| {
                     html! {
-                        <span class="mr-2 py-1 px-4 rounded-full bg-blue-100 text-blue-600">{ &item.name }</span>
+                        <Link<Route> to={Route::TopicPage{topic: item.name.clone()}} classes="mr-2 py-1 px-4 rounded-full bg-blue-100 text-blue-600 cursor-pointer">{ &item.name }</Link<Route>>
                     }
                 }).collect::<Html>()}
                 </div>
