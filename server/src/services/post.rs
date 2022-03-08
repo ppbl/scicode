@@ -1,9 +1,9 @@
 use crate::{
-    auth::get_claims,
+    auth::Claims,
     db,
     models::{PostAndUser, PostAndUserAndTopics, PostThumbs, Topics},
 };
-use actix_web::{get, http::header::AUTHORIZATION, web, HttpRequest, HttpResponse, Responder};
+use actix_web::{get, web, Responder};
 use diesel::prelude::*;
 use serde::Deserialize;
 
@@ -13,7 +13,7 @@ pub struct PostQuery {
 }
 
 #[get("/post")]
-pub async fn post(query: web::Query<PostQuery>, req: HttpRequest) -> impl Responder {
+pub async fn post(query: web::Query<PostQuery>, claims: Option<Claims>) -> impl Responder {
     use crate::schema::posts::dsl::*;
     use crate::schema::posts_thumbs;
     use crate::schema::topics::dsl::{id as topics_id, topics as topics_table};
@@ -51,9 +51,7 @@ pub async fn post(query: web::Query<PostQuery>, req: HttpRequest) -> impl Respon
         downs: results[0].downs,
         voting: None,
     };
-    let token = req.headers().get(AUTHORIZATION);
-    if let Some(token) = token {
-        let claims = get_claims(token.to_str().unwrap());
+    if let Some(claims) = claims {
         let thumbs = posts_thumbs::table
             .filter(posts_thumbs::post.eq(query.id))
             .filter(posts_thumbs::author.eq(claims.userid))
@@ -62,5 +60,5 @@ pub async fn post(query: web::Query<PostQuery>, req: HttpRequest) -> impl Respon
             res.voting = thumbs.voting
         }
     }
-    HttpResponse::Ok().json(&res)
+    web::Json(res)
 }

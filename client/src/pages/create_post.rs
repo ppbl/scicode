@@ -57,7 +57,7 @@ pub fn create_post() -> Html {
                     .text()
                     .await
                     .unwrap();
-                if res == "success" {
+                if res == "Success" {
                     history.push(Route::Home);
                 } else {
                     alert(&res);

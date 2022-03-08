@@ -7,7 +7,7 @@ use chrono::Local;
 use diesel::prelude::*;
 use rust_decimal::prelude::*;
 use serde::Deserialize;
-use std::{cmp::Ordering, ops::Mul};
+use std::ops::Mul;
 
 // reddit hot post algorithm
 fn get_hot_value(ups: i64, downs: i64, publish_date: chrono::NaiveDateTime) -> i64 {
@@ -67,7 +67,6 @@ async fn posts(query: web::Query<PostsQuery>) -> impl Responder {
             .load::<PostAndUser>(&conn)
             .expect("Error loading posts");
     } else {
-        println!("{:?}", vec![topic_id]);
         results = posts
             .inner_join(users)
             .filter(published.eq(true))
@@ -86,15 +85,11 @@ async fn posts(query: web::Query<PostsQuery>) -> impl Responder {
             .expect("Error loading posts");
     }
     results.sort_by(|prev, curr| {
-        let order = get_hot_value(curr.ups as i64, curr.downs as i64, curr.create_at)
-            - get_hot_value(prev.ups as i64, prev.downs as i64, prev.create_at);
-        if order > 0 {
-            Ordering::Greater
-        } else if order < 0 {
-            Ordering::Less
-        } else {
-            Ordering::Equal
-        }
+        get_hot_value(prev.ups as i64, prev.downs as i64, prev.create_at).cmp(&get_hot_value(
+            curr.ups as i64,
+            curr.downs as i64,
+            curr.create_at,
+        ))
     });
     HttpResponse::Ok().json(results)
 }

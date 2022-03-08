@@ -27,7 +27,7 @@ pub fn create_topic() -> Html {
                     .text()
                     .await
                     .expect("");
-                if res == "success" {
+                if res == "Success" {
                     alert("创建成功");
                     topic.set_value("");
                 } else {

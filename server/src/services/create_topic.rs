@@ -11,9 +11,9 @@ struct Body {
 #[post("/create_topic")]
 async fn create_topic(req_body: web::Json<Body>, req: HttpRequest) -> impl Responder {
     let token = req.headers().get(AUTHORIZATION);
-    if let Some(token) = token {
+    if let Some(_) = token {
         if req_body.name.trim() == "" {
-            return HttpResponse::Ok().body("please input topic name");
+            return HttpResponse::BadRequest().body("please input topic name");
         }
         let conn = db::get_connection();
         let topic = NewTopic {
@@ -23,8 +23,8 @@ async fn create_topic(req_body: web::Json<Body>, req: HttpRequest) -> impl Respo
             .values(&topic)
             .execute(&conn)
             .expect("Error creating new topic");
-        HttpResponse::Ok().body("success")
+        HttpResponse::Ok().body("Success")
     } else {
-        HttpResponse::Ok().body("please sgin in")
+        HttpResponse::Unauthorized().body("Please sgin in")
     }
 }

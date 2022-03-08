@@ -1200,9 +1200,9 @@ dependencies = [
 
 [[package]]
 name = "once_cell"
-version = "1.9.0"
+version = "1.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "da32515d9f6e6e489d7bc9d84c71b060db7247dc035bbe44eac88cf87486d8d5"
+checksum = "87f3e037eac156d1775da914196f0f37741a274155e34a0b7e427c35d2a2ecb9"
 
 [[package]]
 name = "openssl"
@@ -1592,13 +1592,14 @@ dependencies = [
 name = "scicode_server"
 version = "0.1.0"
 dependencies = [
+ "actix-utils",
  "actix-web",
  "chrono",
  "diesel",
  "dotenv",
  "jsonwebtoken",
- "lazy_static",
  "nanoid",
+ "once_cell",
  "r2d2",
  "reqwest",
  "rust-argon2",

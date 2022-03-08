@@ -1,5 +1,5 @@
 use crate::{db, models::CommentAndUser, schema::users::avatar_url};
-use actix_web::{get, web, HttpResponse, Responder};
+use actix_web::{get, web, Responder};
 use diesel::prelude::*;
 use serde::Deserialize;
 
@@ -23,5 +23,5 @@ async fn comments(query: web::Query<CommentQuery>) -> impl Responder {
         .select((id, body, create_at, (id, username, avatar_url)))
         .load::<CommentAndUser>(&conn)
         .expect("Error loading comments");
-    HttpResponse::Ok().json(results)
+    web::Json(results)
 }

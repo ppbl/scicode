@@ -234,7 +234,7 @@ pub fn post(props: &PostProps) -> Html {
                             html!()
                         }
                     }
-                    <div class="text-sm text-slate-500">{author.username.clone()}{"发布于"}{create_at.format("%Y-%m-%d %H:%M:%S")}</div>
+                    <div class="text-sm text-slate-500">{author.username.clone()}{"发布于"}{Local.from_utc_datetime(create_at).format("%Y-%m-%d %H:%M:%S")}</div>
                 </div>
                 <Markdown class="pt-2" source={body.to_string()} />
                 <div class="flex justify-between mt-2">
@@ -332,7 +332,7 @@ pub fn post(props: &PostProps) -> Html {
                                         }
                                             <span>{ &author.username }</span>
                                         </div>
-                                        <span class="text-slate-400">{ create_at.format("%m-%d %H:%M:%S") }</span>
+                                        <span class="text-slate-400">{ Local.from_utc_datetime(create_at).format("%m-%d %H:%M:%S") }</span>
                                     </div>
                                     <div class="">{ body }</div>
                                 </div>
