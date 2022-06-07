@@ -11,6 +11,10 @@ server side use [actix-web](https://actix.rs/) + [diesel](https://diesel.rs/) + 
 `cargo install trunk`  
 `trunk serve --open`
 
+windows
+
+`trunk --config ./Trunk.win.toml serve --open`
+
 ## server
 
 `cargo install cargo-watch`  
