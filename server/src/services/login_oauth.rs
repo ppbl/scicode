@@ -3,7 +3,7 @@ use crate::{
     db,
     models::{NewUser, User},
 };
-use actix_web::{get, web, Responder};
+use actix_web::{get, http::header::ContentType, web, HttpResponse, Responder};
 use diesel::prelude::*;
 use reqwest::header::{HeaderValue, ACCEPT, AUTHORIZATION, USER_AGENT};
 use serde::{Deserialize, Serialize};
@@ -101,13 +101,15 @@ async fn login_oauth(query: web::Query<AuthQuery>) -> impl Responder {
         exp: get_after_days(7),
     };
     let token = generate_token(claims);
-    format!(
-        "<script>
+    HttpResponse::Ok()
+        .content_type(ContentType::html())
+        .body(format!(
+            "<script>
             window.opener.localStorage.setItem('token', '{}');
             window.opener.localStorage.setItem('userid', '{}');
             window.opener.location.reload();
             window.close();
         </script>",
-        token, user.id
-    )
+            token, user.id
+        ))
 }
